@@ -1,0 +1,16 @@
+const express = require("express");
+const app = express();
+
+app.get("/api/health", (req, res) => {
+    res.status(200).json({
+        status: "online",
+        service: "LovellyLilly AI"
+    });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ status: "error", message: err.message });
+});
+
+module.exports = app;
