@@ -1,0 +1,107 @@
+.bc {
+  background:var(--clr-card);
+  border:1px solid var(--clr-border);
+  padding:var(--sp-4); border-radius:2px;
+  position:relative; overflow:hidden; cursor:none;
+  transition:transform .3s var(--ease-expo), box-shadow .3s ease;
+  transform-style:preserve-3d;
+}
+.bc::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,var(--clr-accent),transparent);
+  transform:scaleX(0); transform-origin:left;
+  transition:transform .55s var(--ease-expo);
+}
+.bc:not(.no-hover):hover { transform:translateY(-4px) scale(1.01); }
+.bc:not(.no-hover):hover::before { transform:scaleX(1); }
+.bc.accent-bc { background:var(--clr-accent); }
+.bc.accent-bc::before { background:linear-gradient(90deg,transparent,rgba(0,0,0,.25),transparent); }
+
+.bc-icon {
+  width:44px; height:44px; border-radius:4px;
+  background:var(--clr-surface); border:1px solid var(--clr-border);
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:var(--sp-2); flex-shrink:0;
+  transition:background .3s, border-color .3s;
+}
+.bc:hover .bc-icon { background:var(--clr-accent); border-color:transparent; }
+.bc.accent-bc .bc-icon { background:rgba(0,0,0,.15); border:none; }
+.bc-icon svg { width:19px; height:19px; stroke:var(--clr-accent); fill:none; stroke-width:1.5; }
+.bc:hover .bc-icon svg { stroke:var(--clr-bg); }
+.bc.accent-bc .bc-icon svg { stroke:var(--clr-bg); }
+
+.bc-n {
+  font-family:var(--f-doll); font-size:48px; letter-spacing:2px;
+  line-height:1; color:var(--clr-border); margin-bottom:12px;
+  transition:color .3s;
+}
+.bc:hover .bc-n { color:rgba(255,255,255,0.05); }
+[data-theme="light"] .bc:hover .bc-n,[data-theme="sand"] .bc:hover .bc-n { color:rgba(0,0,0,.05); }
+
+.bc-title {
+  font-family:var(--f-diamond); font-weight:700; font-size:18px;
+  color:var(--clr-text); line-height:1.2; margin-bottom:10px;
+}
+.bc.accent-bc .bc-title { color:var(--clr-bg); }
+.bc-desc {
+  font-family:var(--f-lunchtype); font-size:15px;
+  color:var(--clr-muted); line-height:1.75;
+}
+.bc.accent-bc .bc-desc { color:rgba(0,0,0,.5); }
+
+/* Pricing Cards */
+.pc {
+  background:var(--clr-card); border:1px solid var(--clr-border);
+  padding:var(--sp-5) var(--sp-4); border-radius:2px; position:relative;
+  cursor:none;
+  transition:transform .3s var(--ease-expo), box-shadow .3s;
+  transform-style:preserve-3d;
+}
+.pc:hover { transform:translateY(-6px) scale(1.01); box-shadow:0 24px 60px rgba(0,0,0,.22); }
+.pc.pop { border:2px solid var(--clr-accent); }
+.pc.accent-pc { background:var(--clr-accent); }
+
+.pop-badge {
+  position:absolute; top:0; left:50%;
+  transform:translateX(-50%) translateY(-50%);
+  background:var(--clr-accent); color:var(--clr-bg);
+  font-family:var(--f-cotham); font-size:9px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; padding:4px 14px; white-space:nowrap;
+}
+.pc-tier {
+  font-family:var(--f-cotham); font-size:10px; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase; color:var(--clr-muted); margin-bottom:16px;
+}
+.accent-pc .pc-tier { color:rgba(0,0,0,.4); }
+.pc-amt {
+  font-family:var(--f-nativera); font-weight:800;
+  font-size:clamp(36px,4.5vw,52px); line-height:1;
+  color:var(--clr-text); margin-bottom:4px;
+}
+.accent-pc .pc-amt { color:var(--clr-bg); }
+.pc-period { font-family:var(--f-lunchtype); font-size:14px; color:var(--clr-muted); margin-bottom:24px; }
+.accent-pc .pc-period { color:rgba(0,0,0,.42); }
+.pc-div { height:1px; background:var(--clr-border); margin-bottom:24px; }
+.accent-pc .pc-div { background:rgba(0,0,0,.12); }
+
+.pc-feats { list-style:none; display:flex; flex-direction:column; gap:11px; margin-bottom:var(--sp-4); }
+.pc-feats li {
+  font-family:var(--f-lunchtype); font-size:14px; color:var(--clr-muted);
+  display:flex; gap:9px; align-items:flex-start; line-height:1.5;
+}
+.accent-pc .pc-feats li { color:rgba(0,0,0,.52); }
+
+.chk { width:13px; height:13px; flex-shrink:0; margin-top:3px; stroke:var(--clr-accent); fill:none; stroke-width:2; }
+.accent-pc .chk { stroke:var(--clr-bg); }
+
+.pc-btn {
+  width:100%; padding:13px 20px; min-height:48px;
+  font-family:var(--f-cotham); font-size:11px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; cursor:none;
+  background:var(--clr-accent); color:var(--clr-bg); border:none;
+  transition:background .2s, transform .15s;
+}
+.pc-btn:hover { background:var(--clr-accent2); transform:scale(1.02); }
+.pc-btn:active { transform:scale(0.96); }
+.accent-pc .pc-btn { background:var(--clr-bg); color:var(--clr-accent); }
+.accent-pc .pc-btn:hover { background:var(--clr-text); color:var(--clr-accent); }

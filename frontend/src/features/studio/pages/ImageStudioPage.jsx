@@ -2,24 +2,15 @@ import React, { useState } from 'react';
 import AppShell from '../../../components/layout/AppShell';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
-import Input from '../../../components/ui/Input';
-import { 
-  Image as ImageIcon, 
-  Settings2, 
-  Download, 
-  Share2, 
-  Trash2, 
-  Maximize2,
-  Sparkles,
-  Layers,
-  History,
-  Grid
+import {
+  Image as ImageIcon, Settings2, Download, Share2, Trash2,
+  Maximize2, Sparkles, Layers, History, Grid
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ImageStudioPage = () => {
   const [prompt, setPrompt] = useState('');
-  const [activeTab, setActiveTab] = useState('generate'); // generate, history
+  const [activeTab, setActiveTab] = useState('generate');
   const [selectedAspect, setSelectedAspect] = useState('1:1');
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState([]);
@@ -27,13 +18,11 @@ const ImageStudioPage = () => {
   const handleGenerate = () => {
     if (!prompt) return;
     setIsLoading(true);
-    // Mock generation
     setTimeout(() => {
       setResults(prev => [{
         id: Date.now(),
         url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800',
-        prompt: prompt,
-        aspect: selectedAspect
+        prompt, aspect: selectedAspect
       }, ...prev]);
       setIsLoading(false);
       setPrompt('');
@@ -42,149 +31,119 @@ const ImageStudioPage = () => {
 
   return (
     <AppShell>
-      <div className="max-w-[1400px] mx-auto p-6 md:p-8">
-        <div className="flex flex-col md:flex-row gap-8">
-          
-          {/* Left Panel: Settings */}
-          <div className="w-full md:w-[400px] flex flex-col gap-6">
-             <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-lg bg-brand-gradient flex items-center justify-center text-white shadow-brand-glow">
-                   <ImageIcon size={22} />
-                </div>
-                <div>
-                   <h1 className="text-h4">Image Studio</h1>
-                   <p className="text-[13px] text-text-muted">Powered by Gemini Imagen 3</p>
-                </div>
-             </div>
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
+        <div style={{ display: 'flex', gap: '24px' }}>
+          {/* Left: Settings */}
+          <div style={{ width: '400px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+              <div style={{
+                width: '40px', height: '40px', borderRadius: '10px',
+                background: 'var(--clr-accent)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', color: 'var(--clr-bg)',
+              }}>
+                <ImageIcon size={20} />
+              </div>
+              <div>
+                <h1 style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '18px', color: 'var(--clr-text)' }}>Image Studio</h1>
+                <p style={{ fontSize: '12px', color: 'var(--clr-muted)', fontFamily: 'var(--f-cotham)', letterSpacing: '1px' }}>GEMINI IMAGEN 3</p>
+              </div>
+            </div>
 
-             <Card className="p-6">
-                <h3 className="text-sm font-bold text-text-primary mb-4 flex items-center gap-2">
-                   <Sparkles size={16} className="text-brand-primary" />
-                   Generate Image
-                </h3>
-                
-                <div className="flex flex-col gap-4">
-                   <div className="flex flex-col gap-2">
-                      <label className="text-[13px] text-text-secondary font-medium">Prompt</label>
-                      <textarea
-                        className="w-full h-32 bg-bg-elevated border border-border-subtle rounded-sm p-4 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand-primary transition-all resize-none"
-                        placeholder="A futuristic city with floating neon structures, digital art style..."
-                        value={prompt}
-                        onChange={(e) => setPrompt(e.target.value)}
-                      />
-                   </div>
+            <Card style={{ padding: '20px' }}>
+              <h3 className="fl" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Sparkles size={14} style={{ color: 'var(--clr-accent)' }} /> Generate Image
+              </h3>
+              <textarea
+                className="fi"
+                style={{ width: '100%', height: '120px', resize: 'none', marginBottom: '12px' }}
+                placeholder="A futuristic city with floating neon structures..."
+                value={prompt} onChange={(e) => setPrompt(e.target.value)}
+              />
+              <label className="fl" style={{ marginBottom: '6px', display: 'block' }}>Aspect Ratio</label>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', marginBottom: '14px' }}>
+                {['1:1', '16:9', '9:16'].map(r => (
+                  <button key={r} onClick={() => setSelectedAspect(r)} style={{
+                    padding: '8px', border: '1px solid', fontSize: '12px',
+                    fontFamily: 'var(--f-lunchtype)', cursor: 'pointer',
+                    borderColor: selectedAspect === r ? 'var(--clr-accent)' : 'var(--clr-border)',
+                    background: selectedAspect === r ? 'color-mix(in srgb, var(--clr-accent) 10%, transparent)' : 'var(--clr-surface)',
+                    color: selectedAspect === r ? 'var(--clr-accent)' : 'var(--clr-muted)',
+                  }}>
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <Button className="w-full" onClick={handleGenerate} loading={isLoading}>Generate</Button>
+            </Card>
 
-                   <div className="flex flex-col gap-2">
-                      <label className="text-[13px] text-text-secondary font-medium">Aspect Ratio</label>
-                      <div className="grid grid-cols-3 gap-2">
-                         {['1:1', '16:9', '9:16'].map(ratio => (
-                           <button
-                             key={ratio}
-                             onClick={() => setSelectedAspect(ratio)}
-                             className={`py-2 rounded-sm border text-xs font-medium transition-all ${selectedAspect === ratio ? 'bg-brand-primary/10 border-brand-primary text-brand-primary' : 'bg-bg-elevated border-border-subtle text-text-muted hover:border-border-default'}`}
-                           >
-                             {ratio}
-                           </button>
-                         ))}
-                      </div>
-                   </div>
-
-                   <Button 
-                     className="w-full mt-2" 
-                     onClick={handleGenerate}
-                     isLoading={isLoading}
-                     icon={Sparkles}
-                   >
-                     Generate
-                   </Button>
-                </div>
-             </Card>
-
-             <Card className="p-6">
-                <h3 className="text-sm font-bold text-text-primary mb-4 flex items-center gap-2">
-                   <Settings2 size={16} className="text-brand-primary" />
-                   Advanced Settings
-                </h3>
-                <div className="space-y-4">
-                   <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-text-secondary">Image Quatlity</span>
-                      <span className="text-text-primary font-mono">Standard</span>
-                   </div>
-                   <div className="flex items-center justify-between text-[13px]">
-                      <span className="text-text-secondary">Safety Filter</span>
-                      <span className="text-semantic-success font-semibold px-2 py-0.5 bg-semantic-success/10 rounded-full text-[10px]">Active</span>
-                   </div>
-                </div>
-             </Card>
+            <Card style={{ padding: '20px' }}>
+              <h3 className="fl" style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Settings2 size={14} style={{ color: 'var(--clr-accent)' }} /> Advanced
+              </h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '8px' }}>
+                <span style={{ color: 'var(--clr-muted)' }}>Quality</span>
+                <span style={{ color: 'var(--clr-text)', fontFamily: 'monospace' }}>Standard</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                <span style={{ color: 'var(--clr-muted)' }}>Safety Filter</span>
+                <span style={{ fontSize: '10px', color: 'var(--color-success)', fontFamily: 'var(--f-cotham)', letterSpacing: '1px' }}>ACTIVE</span>
+              </div>
+            </Card>
           </div>
 
-          {/* Right Panel: Canvas/Results */}
-          <div className="flex-1 min-w-0">
-             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-1 bg-bg-surface border border-border-subtle p-1 rounded-sm">
-                   <button 
-                     onClick={() => setActiveTab('generate')}
-                     className={`px-4 py-1.5 rounded-sm text-[13px] font-medium transition-all ${activeTab === 'generate' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary'}`}
-                   >
-                     Recent
-                   </button>
-                   <button 
-                     onClick={() => setActiveTab('history')}
-                     className={`px-4 py-1.5 rounded-sm text-[13px] font-medium transition-all ${activeTab === 'history' ? 'bg-bg-elevated text-text-primary shadow-sm' : 'text-text-muted hover:text-text-secondary'}`}
-                   >
-                     Collection
-                   </button>
-                </div>
-                <div className="flex items-center gap-2">
-                   <Button variant="ghost" size="sm" icon={Grid} className="w-9 h-9 p-0" />
-                   <Button variant="ghost" size="sm" icon={History} className="w-9 h-9 p-0" />
-                </div>
-             </div>
+          {/* Right: Results */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', gap: '4px', background: 'var(--clr-surface)', border: '1px solid var(--clr-border)', padding: '3px' }}>
+                {['Recent', 'Collection'].map(tab => (
+                  <button key={tab} onClick={() => setActiveTab(tab === 'Recent' ? 'generate' : 'history')} style={{
+                    padding: '6px 14px', fontSize: '12px', border: 'none', cursor: 'pointer',
+                    fontFamily: 'var(--f-lunchtype)',
+                    background: (tab === 'Recent' ? activeTab === 'generate' : activeTab === 'history') ? 'var(--clr-card)' : 'transparent',
+                    color: (tab === 'Recent' ? activeTab === 'generate' : activeTab === 'history') ? 'var(--clr-text)' : 'var(--clr-muted)',
+                  }}>
+                    {tab}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-             {results.length === 0 ? (
-                <div className="h-[600px] border-2 border-dashed border-border-subtle rounded-sm flex flex-col items-center justify-center text-center p-8">
-                   <div className="w-16 h-16 rounded-full bg-bg-elevated flex items-center justify-center text-text-muted mb-4">
-                      <ImageIcon size={32} />
-                   </div>
-                   <h3 className="text-h4 mb-2">No images generated yet</h3>
-                   <p className="text-text-muted max-w-[320px]">Enter a prompt on the left to start creating amazing visuals.</p>
-                </div>
-             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                   <AnimatePresence>
-                      {results.map((img) => (
-                        <motion.div
-                          key={img.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          className="group relative aspect-square bg-bg-surface border border-border-subtle rounded-lg overflow-hidden"
-                        >
-                           <img src={img.url} alt={img.prompt} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity p-6 flex flex-col justify-between">
-                              <div className="flex justify-end gap-2">
-                                 <button className="w-8 h-8 rounded-sm bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-all">
-                                    <Download size={16} />
-                                 </button>
-                                 <button className="w-8 h-8 rounded-sm bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-all">
-                                    <Share2 size={16} />
-                                 </button>
-                                 <button className="w-8 h-8 rounded-sm bg-semantic-danger/20 backdrop-blur-md flex items-center justify-center text-semantic-danger hover:bg-semantic-danger/30 transition-all">
-                                    <Trash2 size={16} />
-                                 </button>
-                              </div>
-                              <div>
-                                 <p className="text-white text-xs line-clamp-2 mb-3">{img.prompt}</p>
-                                 <div className="flex items-center gap-2">
-                                    <span className="px-2 py-0.5 bg-brand-primary/20 rounded-full text-[10px] text-brand-primary font-bold">GEMINI 3</span>
-                                    <span className="text-[10px] text-white/60">{img.aspect}</span>
-                                 </div>
-                              </div>
-                           </div>
-                        </motion.div>
-                      ))}
-                   </AnimatePresence>
-                </div>
-             )}
+            {results.length === 0 ? (
+              <div style={{
+                height: '500px', border: '2px dashed var(--clr-border)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+              }}>
+                <ImageIcon size={32} style={{ color: 'var(--clr-muted)', marginBottom: '14px' }} />
+                <h3 style={{ fontFamily: 'var(--f-syne)', fontSize: '18px', color: 'var(--clr-text)', marginBottom: '8px' }}>No images yet</h3>
+                <p style={{ color: 'var(--clr-muted)', fontSize: '14px', fontFamily: 'var(--f-lunchtype)', maxWidth: '300px' }}>Enter a prompt to start creating.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                <AnimatePresence>
+                  {results.map((img) => (
+                    <motion.div key={img.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                      style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', border: '1px solid var(--clr-border)' }}
+                    >
+                      <img src={img.url} alt={img.prompt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <div style={{
+                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
+                        opacity: 0, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        transition: 'opacity 0.2s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '0'}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                          <button style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Download size={14} /></button>
+                          <button style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Share2 size={14} /></button>
+                        </div>
+                        <p style={{ color: 'white', fontSize: '12px' }}>{img.prompt}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
           </div>
         </div>
       </div>

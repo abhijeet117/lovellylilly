@@ -1,0 +1,84 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 72px);
+}
+
+.dashboard-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.dashboard-empty-title {
+  font-family: var(--f-groote);
+  font-size: clamp(28px, 5vw, 44px);
+  color: var(--clr-text);
+  margin-bottom: 12px;
+}
+
+.dashboard-empty-title em {
+  color: var(--clr-accent);
+  font-style: normal;
+}
+
+.dashboard-empty-desc {
+  color: var(--clr-muted);
+  font-family: var(--f-lunchtype);
+  max-width: 400px;
+  font-size: 14px;
+}
+
+.dashboard-suggestions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 40px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.dashboard-suggestion-btn {
+  padding: 14px;
+  text-align: left;
+  font-size: 13px;
+  font-family: var(--f-lunchtype);
+  background: var(--clr-card);
+  border: 1px solid var(--clr-border);
+  color: var(--clr-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.dashboard-suggestion-btn:hover {
+  border-color: var(--clr-accent);
+  color: var(--clr-text);
+}
+
+.dashboard-suggestion-try {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  font-family: var(--f-cotham);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dashboard-input-wrapper {
+  border-top: 1px solid var(--clr-border);
+  background: color-mix(in srgb, var(--clr-bg) 80%, transparent);
+  backdrop-filter: blur(12px);
+}

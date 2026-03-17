@@ -1,0 +1,126 @@
+/* ── RESET ───────────────────────────────────────────────── */
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+body {
+  background: var(--clr-bg);
+  color: var(--clr-text);
+  font-family: var(--f-lunchtype);
+  font-size: var(--ts-base);
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: none;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.4s ease, color 0.35s ease;
+}
+/* transition all color tokens */
+*{ transition:
+  background-color 0.4s ease,
+  border-color 0.35s ease,
+  color 0.3s ease,
+  box-shadow 0.3s ease;
+}
+/* but don't slow down transforms/opacity from animation */
+.no-tok-trans { transition: none !important; }
+
+::-webkit-scrollbar { width: 2px; }
+::-webkit-scrollbar-thumb { background: var(--clr-accent); }
+
+/* ── GRAIN ───────────────────────────────────────────────── */
+body::before {
+  content:''; position:fixed; inset:0; z-index:8000;
+  pointer-events:none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.032; mix-blend-mode: overlay;
+}
+
+/* ── CUSTOM CURSOR ───────────────────────────────────────── */
+#cur-dot {
+  position:fixed; z-index:9999;
+  width:5px; height:5px; border-radius:50%;
+  background: var(--clr-accent);
+  pointer-events:none; transform:translate(-50%,-50%);
+  will-change: left,top;
+  transition: background 0.2s, transform 0.1s;
+}
+#cur-ring {
+  position:fixed; z-index:9998;
+  width:32px; height:32px; border-radius:50%;
+  border: 1px solid var(--clr-accent);
+  pointer-events:none; transform:translate(-50%,-50%);
+  will-change: left,top;
+  transition:
+    width 0.32s var(--ease-expo),
+    height 0.32s var(--ease-expo),
+    opacity 0.3s,
+    border-color 0.3s;
+  opacity: 0.55;
+}
+#cur-halo {
+  position:fixed; z-index:9997;
+  width:80px; height:80px; border-radius:50%;
+  border: 1px solid rgba(201,168,76,0.06);
+  pointer-events:none; transform:translate(-50%,-50%);
+  will-change: left,top;
+}
+.is-hovering #cur-ring  { width:54px; height:54px; opacity:0.9; border-color:var(--clr-accent2); }
+.is-hovering #cur-dot   { transform:translate(-50%,-50%) scale(1.8); background:var(--clr-accent2); }
+.is-clicking #cur-ring  { width:20px; height:20px; opacity:1; }
+
+/* ── CONTAINER ───────────────────────────────────────────── */
+.wrap { max-width:1280px; margin:0 auto; padding:0 var(--sp-4); }
+.pad  { padding:var(--sp-12) 0; }
+
+/* ── SHARED LABEL STYLE (--f-cotham) ─────────────────────── */
+.lbl {
+  font-family: var(--f-cotham); font-size:11px; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase;
+  color: var(--clr-accent);
+}
+
+/* ── SECTION HEADINGS ────────────────────────────────────── */
+.sec-tag { display:block; margin-bottom:14px; }
+.sec-h2 {
+  font-family: var(--f-barnebok); font-weight:700;
+  font-size: clamp(var(--ts-3xl), 5vw, 56px);
+  line-height:1.04; letter-spacing:-0.02em; color:var(--clr-text);
+}
+.sec-sub {
+  font-family: var(--f-lunchtype); font-size:var(--ts-lg);
+  color:var(--clr-muted); margin-top:12px; line-height:1.72;
+}
+.sec-head { margin-bottom:var(--sp-8); }
+.sec-head.center { text-align:center; }
+
+/* ── REVEAL SYSTEM ───────────────────────────────────────── */
+.rv { opacity:0; transform:translateY(32px);
+  transition:opacity .9s var(--ease-expo), transform .9s var(--ease-expo); }
+.rv.on { opacity:1; transform:translateY(0); }
+.rv-sc { opacity:0; transform:scale(0.92);
+  transition:opacity .7s var(--ease-expo), transform .7s var(--ease-expo); }
+.rv-sc.on { opacity:1; transform:scale(1); }
+.rv-sl { opacity:0; transform:translateX(-32px);
+  transition:opacity .85s var(--ease-expo), transform .85s var(--ease-expo); }
+.rv-sl.on { opacity:1; transform:translateX(0); }
+
+.d1{transition-delay:.06s}.d2{transition-delay:.13s}.d3{transition-delay:.20s}
+.d4{transition-delay:.27s}.d5{transition-delay:.34s}.d6{transition-delay:.42s}
+
+/* ── VIEW TRANSITION for theme ───────────────────────────── */
+::view-transition-old(root),
+::view-transition-new(root) { animation:none; mix-blend-mode:normal; }
+
+/* @keyframes */
+@keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.3} }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(9px)}}
+@keyframes ticker-run{0%{transform:translateX(0)}100%{transform:translateX(-33.333%)}}
+@keyframes spark-anim{0%,100%{transform:rotate(0)scale(1)}25%{transform:rotate(9deg)scale(1.07)}75%{transform:rotate(-9deg)scale(1.05)}}
+@keyframes pulse-green { 0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,.4)} 50%{box-shadow:0 0 0 6px rgba(39,174,96,0)} }
+
+@media(prefers-reduced-motion:reduce) {
+  *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; }
+  .rv,.rv-sc,.rv-sl { opacity:1!important; transform:none!important; }
+}

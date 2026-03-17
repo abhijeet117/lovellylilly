@@ -3,16 +3,9 @@ import AppShell from '../../../components/layout/AppShell';
 import Card   from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Input  from '../../../components/ui/Input';
-import { 
-  User, 
-  Shield, 
-  CreditCard, 
-  Key, 
-  Bell, 
-  Smartphone,
-  Check,
-  ChevronRight,
-  LogOut
+import {
+  User, Shield, CreditCard, Key, Bell,
+  Smartphone, Check, LogOut
 } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 import { useAuth } from '../../auth/hooks/useAuth';
@@ -31,139 +24,151 @@ const SettingsPage = () => {
 
   return (
     <AppShell>
-      <div className="max-w-[1200px] mx-auto p-6 md:p-10">
-        <div className="mb-10">
-           <h1 className="text-h2 gradient-text mb-2">Settings</h1>
-           <p className="text-text-secondary">Manage your account preferences and application settings.</p>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px' }}>
+        <div style={{ marginBottom: '36px' }}>
+          <h1 style={{ fontFamily: 'var(--f-groote)', fontSize: 'clamp(28px, 4vw, 40px)', color: 'var(--clr-text)', marginBottom: '6px' }}>
+            Settings
+          </h1>
+          <p style={{ color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)', fontSize: '14px' }}>
+            Manage your account preferences and application settings.
+          </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-           {/* Sidebar Navigation */}
-           <div className="w-full lg:w-[280px] flex flex-col gap-1">
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-sm transition-all text-sm font-medium ${activeTab === tab.id ? 'bg-brand-primary/10 text-brand-primary border-l-2 border-brand-primary' : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}`}
-                >
-                  <tab.icon size={18} />
-                  {tab.label}
-                </button>
-              ))}
-              <div className="my-4 border-t border-border-subtle" />
-              <button className="flex items-center gap-3 px-4 py-3 rounded-sm text-sm font-medium text-semantic-danger hover:bg-semantic-danger/10 transition-all">
-                 <LogOut size={18} />
-                 Sign Out
+        <div style={{ display: 'flex', gap: '28px', flexDirection: 'row' }}>
+          {/* Tab Nav */}
+          <div style={{ width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '10px 14px', border: 'none', cursor: 'pointer',
+                  fontFamily: 'var(--f-lunchtype)', fontSize: '14px',
+                  background: activeTab === tab.id ? 'var(--clr-card)' : 'transparent',
+                  color: activeTab === tab.id ? 'var(--clr-accent)' : 'var(--clr-muted)',
+                  borderLeft: activeTab === tab.id ? '2px solid var(--clr-accent)' : '2px solid transparent',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <tab.icon size={16} />
+                {tab.label}
               </button>
-           </div>
+            ))}
+            <div style={{ margin: '12px 0', borderTop: '1px solid var(--clr-border)' }} />
+            <button style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 14px', border: 'none', cursor: 'pointer',
+              fontFamily: 'var(--f-lunchtype)', fontSize: '14px',
+              background: 'transparent', color: 'var(--color-danger)',
+            }}>
+              <LogOut size={16} /> Sign Out
+            </button>
+          </div>
 
-           {/* Content Area */}
-           <div className="flex-1 min-w-0">
-              <Card className="p-8">
-                 {activeTab === 'profile' && (
-                    <div className="space-y-8">
-                       <div className="flex items-center justify-between pb-6 border-b border-border-subtle">
-                          <div>
-                             <h3 className="text-lg font-bold">Public Profile</h3>
-                             <p className="text-sm text-text-muted">How others see you on the platform.</p>
-                          </div>
-                          <Button size="sm">Save Changes</Button>
-                       </div>
-
-                       <div className="flex items-center gap-8">
-                          <div className="relative group">
-                             <div className="w-24 h-24 rounded-full bg-brand-gradient flex items-center justify-center text-2xl font-bold text-white shadow-brand-glow">
-                                {user?.fullName?.split(' ').map(n => n[0]).join('') || 'US'}
-                             </div>
-                             <button className="absolute inset-0 bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
-                                Change
-                             </button>
-                          </div>
-                          <div className="flex-1 flex flex-col gap-1">
-                             <p className="text-sm font-bold text-text-primary">Profile Photo</p>
-                             <p className="text-xs text-text-muted">JPG, GIF or PNG. Max size 2MB.</p>
-                             <div className="flex gap-2 mt-2">
-                                <Button variant="ghost" size="sm">Upload Image</Button>
-                                <Button variant="ghost" size="sm" className="text-semantic-danger">Remove</Button>
-                             </div>
-                          </div>
-                       </div>
-
-                       <div className="grid md:grid-cols-2 gap-6">
-                          <Input label="Full Name" defaultValue={user?.fullName} />
-                          <Input label="Email address" defaultValue={user?.email} />
-                       </div>
-
-                       <div className="flex flex-col gap-2">
-                          <label className="text-[13px] text-text-secondary font-medium">Bio</label>
-                          <textarea 
-                             className="w-full h-24 bg-bg-elevated border border-border-subtle rounded-sm p-4 text-sm text-text-primary outline-none focus:border-brand-primary"
-                             placeholder="A few words about yourself..."
-                          />
-                       </div>
+          {/* Content */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <Card style={{ padding: '28px' }}>
+              {activeTab === 'profile' && (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '20px', borderBottom: '1px solid var(--clr-border)', marginBottom: '24px' }}>
+                    <div>
+                      <h3 style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '18px', color: 'var(--clr-text)' }}>Public Profile</h3>
+                      <p style={{ fontSize: '13px', color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)' }}>How others see you on the platform.</p>
                     </div>
-                 )}
+                    <Button size="sm">Save Changes</Button>
+                  </div>
 
-                 {activeTab === 'security' && (
-                    <div className="space-y-8">
-                       <div className="pb-6 border-b border-border-subtle">
-                          <h3 className="text-lg font-bold">Security Settings</h3>
-                          <p className="text-sm text-text-muted">Manage your password and account security extensions.</p>
-                       </div>
-
-                       <div className="space-y-6">
-                          <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-sm">
-                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-bg-base rounded-sm border border-border-subtle">
-                                   <Smartphone size={20} className="text-text-primary" />
-                                </div>
-                                <div>
-                                   <p className="font-bold text-sm">Two-Factor Authentication</p>
-                                   <p className="text-xs text-text-muted">Secure your account with 2FA using your phone.</p>
-                                </div>
-                             </div>
-                             <Button variant="ghost" size="sm">Enable</Button>
-                          </div>
-
-                          <div className="flex items-center justify-between p-4 bg-bg-elevated rounded-sm">
-                             <div className="flex items-center gap-4">
-                                <div className="p-3 bg-bg-base rounded-sm border border-border-subtle">
-                                   <Key size={20} className="text-text-primary" />
-                                </div>
-                                <div>
-                                   <p className="font-bold text-sm">Password</p>
-                                   <p className="text-xs text-text-muted">Last changed 3 months ago.</p>
-                                </div>
-                             </div>
-                             <Button variant="ghost" size="sm">Change Password</Button>
-                          </div>
-                       </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <div style={{
+                        width: '80px', height: '80px', borderRadius: '50%',
+                        background: 'var(--clr-accent)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                        fontSize: '22px', fontFamily: 'var(--f-doll)', color: 'var(--clr-bg)',
+                      }}>
+                        {user?.fullName?.split(' ').map(n => n[0]).join('') || 'US'}
+                      </div>
                     </div>
-                 )}
-
-                 {activeTab === 'billing' && (
-                    <div className="space-y-8">
-                       <div className="pb-6 border-b border-border-subtle">
-                          <h3 className="text-lg font-bold">Plan & Billing</h3>
-                          <p className="text-sm text-text-muted">Manage your subscription and billing details.</p>
-                       </div>
-                       
-                       <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-lg p-6 flex flex-col md:flex-row justify-between gap-6">
-                          <div>
-                             <div className="flex items-center gap-2 mb-2">
-                                <span className="text-xl font-bold">Free Plan</span>
-                                <Badge variant="success">Active</Badge>
-                             </div>
-                             <p className="text-sm text-text-secondary">Your next billing cycle starts on April 15, 2024.</p>
-                          </div>
-                          <Button>Upgrade to Pro</Button>
-                       </div>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--clr-text)' }}>Profile Photo</p>
+                      <p style={{ fontSize: '12px', color: 'var(--clr-muted)' }}>JPG, GIF or PNG. Max 2MB.</p>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                        <Button variant="ghost" size="sm">Upload</Button>
+                        <Button variant="danger" size="sm">Remove</Button>
+                      </div>
                     </div>
-                 )}
-                 
-                 {/* Other tabs can be added similarly */}
-              </Card>
-           </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+                    <Input label="Full Name" defaultValue={user?.fullName} />
+                    <Input label="Email Address" defaultValue={user?.email} />
+                  </div>
+
+                  <div>
+                    <label className="fl" style={{ marginBottom: '6px', display: 'block' }}>Bio</label>
+                    <textarea
+                      className="fi"
+                      style={{ width: '100%', height: '96px', resize: 'none' }}
+                      placeholder="A few words about yourself..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'security' && (
+                <div>
+                  <div style={{ paddingBottom: '20px', borderBottom: '1px solid var(--clr-border)', marginBottom: '24px' }}>
+                    <h3 style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '18px', color: 'var(--clr-text)' }}>Security Settings</h3>
+                    <p style={{ fontSize: '13px', color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)' }}>Manage your password and account security.</p>
+                  </div>
+                  {[
+                    { icon: Smartphone, title: '2FA', desc: 'Secure with your phone.', action: 'Enable' },
+                    { icon: Key, title: 'Password', desc: 'Last changed 3 months ago.', action: 'Change' },
+                  ].map((item, i) => (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '14px', background: 'var(--clr-surface)', marginBottom: '10px',
+                      border: '1px solid var(--clr-border)',
+                    }}>
+                      <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                        <item.icon size={18} style={{ color: 'var(--clr-text)' }} />
+                        <div>
+                          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--clr-text)' }}>{item.title}</p>
+                          <p style={{ fontSize: '12px', color: 'var(--clr-muted)' }}>{item.desc}</p>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm">{item.action}</Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === 'billing' && (
+                <div>
+                  <div style={{ paddingBottom: '20px', borderBottom: '1px solid var(--clr-border)', marginBottom: '24px' }}>
+                    <h3 style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '18px', color: 'var(--clr-text)' }}>Plan & Billing</h3>
+                    <p style={{ fontSize: '13px', color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)' }}>Manage your subscription.</p>
+                  </div>
+                  <div style={{
+                    padding: '20px',
+                    background: 'color-mix(in srgb, var(--clr-accent) 5%, transparent)',
+                    border: '1px solid color-mix(in srgb, var(--clr-accent) 20%, transparent)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px',
+                  }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                        <span style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '20px', color: 'var(--clr-text)' }}>Free Plan</span>
+                        <Badge variant="success">Active</Badge>
+                      </div>
+                      <p style={{ fontSize: '13px', color: 'var(--clr-muted)' }}>Next billing: April 15, 2024.</p>
+                    </div>
+                    <Button>Upgrade to Pro</Button>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </div>
         </div>
       </div>
     </AppShell>

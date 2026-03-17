@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AuthLayout from '../../../components/layout/AuthLayout';
-import Button from '../../../components/ui/Button';
-import { Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
@@ -21,30 +19,43 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <AuthLayout title="Check your inbox">
-      <div className="flex flex-col items-center text-center">
-        <motion.div 
-          animate={{ y: [0, -10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className="w-20 h-20 rounded-full bg-brand-gradient flex items-center justify-center mb-8 shadow-brand-glow"
+    <AuthLayout
+      headline={<>Almost<br/><em>There.</em></>}
+      tagline="One more step to unlock your AI workspace."
+    >
+      <div style={{ textAlign: 'center' }}>
+        <motion.div
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            background: 'rgba(var(--clr-accent-rgb), 0.12)',
+            border: '1px solid var(--clr-accent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 28px', fontSize: '32px',
+          }}
         >
-          <Mail size={40} className="text-white" />
+          ✉
         </motion.div>
-        
-        <p className="text-[15px] text-text-secondary leading-relaxed mb-8 max-w-[320px]">
+
+        <h2 className="auth-form-h">Check Your Inbox</h2>
+        <p className="auth-form-sub" style={{ maxWidth: '340px', margin: '0 auto 28px' }}>
           We sent a verification link to your email address. Click it to activate your LovellyLilly AI account.
         </p>
-        
-        <Button 
-          variant="ghost" 
-          className="w-full h-12"
+
+        <button
+          className="btn-ghost"
+          style={{ width: '100%', justifyContent: 'center' }}
           onClick={handleResend}
           disabled={cooldown > 0}
         >
           {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend Email'}
-        </Button>
-        
-        <p className="text-[13px] text-text-muted mt-6">
+        </button>
+
+        <p style={{
+          fontSize: '12px', color: 'var(--clr-muted)', marginTop: '20px',
+          fontFamily: 'var(--f-lunchtype)',
+        }}>
           Can't find it? Check your spam or junk folder.
         </p>
       </div>

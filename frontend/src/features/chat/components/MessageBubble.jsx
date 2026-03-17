@@ -2,8 +2,8 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
-import 'highlight.js/styles/github-dark.css'; // We'll customize this later
-import { Copy, Check, MessageSquare } from 'lucide-react';
+import 'highlight.js/styles/github-dark.css';
+import { Copy, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Badge from '../../../components/ui/Badge';
 
@@ -20,44 +20,69 @@ const MessageBubble = ({ message, isAi, isStreaming }) => {
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      className={`flex gap-4 ${isAi ? 'flex-row' : 'flex-row-reverse'} max-w-[860px] mx-auto w-full`}
+      style={{
+        display: 'flex', gap: '14px', maxWidth: '860px', margin: '0 auto', width: '100%',
+        flexDirection: isAi ? 'row' : 'row-reverse',
+      }}
     >
-      <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-white shadow-brand-glow ${isAi ? 'bg-brand-gradient mt-1' : 'bg-bg-chat-user mt-1 border border-border-default'}`}>
-        {isAi ? 'LA' : 'US'}
+      {/* Avatar */}
+      <div style={{
+        width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: '10px', fontFamily: 'var(--f-doll)', fontWeight: 'bold',
+        color: isAi ? 'var(--clr-bg)' : 'var(--clr-text)',
+        background: isAi ? 'var(--clr-accent)' : 'var(--clr-card)',
+        border: isAi ? 'none' : '1px solid var(--clr-border)',
+        marginTop: '4px',
+      }}>
+        {isAi ? 'LL' : 'US'}
       </div>
 
-      <div className={`flex-1 flex flex-col gap-2 ${isAi ? '' : 'items-end'}`}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: isAi ? 'flex-start' : 'flex-end' }}>
         {isAi && isStreaming && (
-          <Badge variant="think" className="animate-pulse w-fit">
+          <Badge variant="info" style={{ animation: 'pulse 2s infinite' }}>
             🧠 Thinking...
           </Badge>
         )}
 
-        <div className={`relative px-5 py-4 rounded-xl border ${isAi ? 'bg-bg-chat-ai border-border-subtle rounded-tl-sm' : 'bg-bg-chat-user border-border-default rounded-tr-sm max-w-[85%]'}`}>
-          <div className="prose prose-invert max-w-none text-[15px] leading-relaxed">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]} 
+        <div style={{
+          position: 'relative', padding: '16px 20px',
+          background: isAi ? 'var(--clr-card)' : 'var(--clr-surface)',
+          border: '1px solid var(--clr-border)',
+          borderRadius: isAi ? '2px 12px 12px 12px' : '12px 2px 12px 12px',
+          maxWidth: isAi ? '100%' : '85%',
+        }}>
+          <div style={{ fontSize: '15px', lineHeight: '1.7', color: 'var(--clr-text)', fontFamily: 'var(--f-lunchtype)' }}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeHighlight]}
               components={{
-                p: ({children}) => <p className="mb-4 last:mb-0">{children}</p>,
+                p: ({children}) => <p style={{ marginBottom: '12px' }}>{children}</p>,
                 code: ({node, inline, className, children, ...props}) => {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline ? (
-                    <div className="relative group my-4 rounded-lg overflow-hidden border border-border-subtle">
-                       <div className="flex items-center justify-between px-4 py-2 bg-[#0B0E18] border-b border-border-subtle">
-                          <span className="text-[11px] font-mono text-text-muted uppercase tracking-wider">{match ? match[1] : 'code'}</span>
-                          <button onClick={handleCopy} className="text-text-muted hover:text-text-primary transition-colors">
-                            {copied ? <Check size={14} className="text-semantic-success" /> : <Copy size={14} />}
-                          </button>
-                       </div>
-                       <pre className="p-4 bg-bg-code overflow-x-auto m-0">
-                          <code className={className} {...props}>
-                            {children}
-                          </code>
-                       </pre>
+                    <div style={{ position: 'relative', margin: '12px 0', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--clr-border)' }}>
+                      <div style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '6px 12px', background: 'var(--clr-bg)', borderBottom: '1px solid var(--clr-border)',
+                      }}>
+                        <span style={{ fontSize: '10px', fontFamily: 'var(--f-cotham)', color: 'var(--clr-muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                          {match ? match[1] : 'code'}
+                        </span>
+                        <button onClick={handleCopy} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--clr-muted)', padding: '2px' }}>
+                          {copied ? <Check size={14} style={{ color: 'var(--color-success)' }} /> : <Copy size={14} />}
+                        </button>
+                      </div>
+                      <pre style={{ padding: '14px', background: 'var(--clr-bg)', overflow: 'auto', margin: 0 }}>
+                        <code className={className} {...props}>{children}</code>
+                      </pre>
                     </div>
                   ) : (
-                    <code className="bg-bg-code border border-border-subtle rounded px-1.5 py-0.5 text-semantic-success text-[13px] font-mono" {...props}>
+                    <code style={{
+                      background: 'var(--clr-bg)', border: '1px solid var(--clr-border)',
+                      borderRadius: '3px', padding: '1px 5px', fontSize: '13px',
+                      fontFamily: 'monospace', color: 'var(--clr-accent)',
+                    }} {...props}>
                       {children}
                     </code>
                   )
@@ -69,16 +94,23 @@ const MessageBubble = ({ message, isAi, isStreaming }) => {
           </div>
 
           {isAi && !isStreaming && (
-             <div className="flex items-center justify-between mt-4 pt-4 border-t border-border-subtle">
-                <div className="flex items-center gap-3">
-                   <span className="text-[11px] text-text-muted">12:45 PM</span>
-                   <Badge variant="system" className="text-[9px] px-1.5 py-0">v1.0</Badge>
-                </div>
-                <button onClick={handleCopy} className="p-1 px-2 rounded-sm hover:bg-bg-elevated text-text-muted hover:text-text-primary transition-all flex items-center gap-1.5 text-[11px]">
-                   {copied ? <Check size={12} /> : <Copy size={12} />}
-                   {copied ? 'Copied' : 'Copy'}
-                </button>
-             </div>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--clr-border)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '10px', color: 'var(--clr-muted)', fontFamily: 'var(--f-cotham)' }}>12:45 PM</span>
+                <Badge variant="system">v1.0</Badge>
+              </div>
+              <button onClick={handleCopy} style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--clr-muted)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px',
+                fontFamily: 'var(--f-cotham)', letterSpacing: '0.5px',
+              }}>
+                {copied ? <Check size={12} /> : <Copy size={12} />}
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
           )}
         </div>
       </div>

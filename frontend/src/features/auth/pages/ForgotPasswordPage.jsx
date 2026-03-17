@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import AuthLayout from '../../../components/layout/AuthLayout';
 import Input from '../../../components/ui/Input';
-import Button from '../../../components/ui/Button';
-import { CheckCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const ForgotPasswordPage = () => {
@@ -27,16 +25,25 @@ const ForgotPasswordPage = () => {
 
   if (isSubmitted) {
     return (
-      <AuthLayout title="Reset link sent!">
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full bg-semantic-success/10 flex items-center justify-center mb-6 border border-semantic-success/20">
-            <CheckCircle size={32} className="text-semantic-success" />
+      <AuthLayout
+        headline={<>Check Your<br/><em>Inbox.</em></>}
+        tagline="We've sent a password reset link to your email."
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '64px', height: '64px', borderRadius: '50%',
+            background: 'rgba(39,174,96,0.1)', border: '1px solid rgba(39,174,96,0.2)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 24px', fontSize: '28px',
+          }}>
+            ✓
           </div>
-          <p className="text-[15px] text-text-secondary mb-8">
-            Check your email for the password reset link.
-          </p>
-          <Link to="/login" className="w-full">
-            <Button variant="ghost" className="w-full h-12">Back to login</Button>
+          <h2 className="auth-form-h">Reset Link Sent</h2>
+          <p className="auth-form-sub">Check your email for the password reset link.</p>
+          <Link to="/login">
+            <button className="btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
+              Back to Sign In
+            </button>
           </Link>
         </div>
       </AuthLayout>
@@ -44,27 +51,26 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <AuthLayout 
-      title="Reset your password" 
-      subtitle="Enter your email and we'll send a reset link."
+    <AuthLayout
+      headline={<>Reset Your<br/><em>Password.</em></>}
+      tagline="Enter your email and we'll send a reset link."
     >
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <Input 
-          label="Email address" 
-          type="email" 
-          placeholder="name@company.com" 
+      <h2 className="auth-form-h">Forgot Password</h2>
+      <p className="auth-form-sub">
+        Remember it? <Link to="/login">Sign in instead</Link>
+      </p>
+      <form onSubmit={handleSubmit}>
+        <Input
+          label="Email Address"
+          type="email"
+          placeholder="you@company.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <Button type="submit" isLoading={isLoading} className="h-12 w-full">
-          Send Reset Link
-        </Button>
-        <div className="text-center">
-          <Link to="/login" className="text-[14px] text-text-secondary hover:text-text-primary transition-colors">
-            Back to login
-          </Link>
-        </div>
+        <button type="submit" className="f-submit" disabled={isLoading}>
+          {isLoading ? 'Sending...' : 'Send Reset Link'}
+        </button>
       </form>
     </AuthLayout>
   );

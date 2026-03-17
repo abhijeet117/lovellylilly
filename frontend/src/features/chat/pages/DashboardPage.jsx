@@ -4,7 +4,7 @@ import ChatInput from '../components/ChatInput';
 import MessageBubble from '../components/MessageBubble';
 import { useSocket } from '../../../context/SocketContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import Logo from '../../../components/ui/Logo';
+import './DashboardPage.css';
 
 const DashboardPage = () => {
   const [messages, setMessages] = useState([]);
@@ -12,7 +12,7 @@ const DashboardPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [currentResponse, setCurrentResponse] = useState('');
-  
+
   const { socket, connected } = useSocket();
   const messagesEndRef = useRef(null);
 
@@ -32,9 +32,9 @@ const DashboardPage = () => {
     });
 
     socket.on('stream_done', (data) => {
-      setMessages(prev => [...prev, { 
-        id: Date.now(), 
-        content: currentResponse, 
+      setMessages(prev => [...prev, {
+        id: Date.now(),
+        content: currentResponse,
         isAi: true,
         sources: data.sources,
         suggestions: data.followUpSuggestions
@@ -45,7 +45,6 @@ const DashboardPage = () => {
 
     socket.on('error', (err) => {
       setIsLoading(false);
-      // Handle error
     });
 
     return () => {
@@ -57,48 +56,47 @@ const DashboardPage = () => {
 
   const handleSend = (text) => {
     if (!text.trim() || !connected) return;
-
     const userMessage = { id: Date.now(), content: text, isAi: false };
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setCurrentResponse('');
-
-    socket.emit('send_message', {
-      content: text,
-      useWebSearch,
-      chatId: 'new', // placeholder
-    });
+    socket.emit('send_message', { content: text, useWebSearch, chatId: 'new' });
   };
 
   return (
     <AppShell showSidebar={true}>
-      <div className="flex flex-col h-[calc(100vh-60px)]">
-        {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 scrollbar-hide">
+      <div className="dashboard-container">
+        {/* Messages */}
+        <div className="dashboard-messages">
           {messages.length === 0 && !currentResponse && (
-             <div className="flex flex-col items-center justify-center h-full text-center">
-                <Logo size="lg" className="mb-6 opacity-40 grayscale" />
-                <h2 className="text-h2 gradient-text mb-4">What do you want to know?</h2>
-                <p className="text-text-secondary max-w-[400px]">Ask anything. Search the web. Create. Build. Analyse documents.</p>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 w-full max-w-[600px]">
-                   {[
-                     "Latest AI research papers 2024",
-                     "How does quantum computing work?",
-                     "Write me a Python REST API",
-                     "Summarize today's top tech news"
-                   ].map((suggestion, i) => (
-                      <button 
-                        key={i}
-                        onClick={() => handleSend(suggestion)}
-                        className="p-4 rounded-lg bg-bg-surface border border-border-subtle text-left text-sm text-text-secondary hover:border-brand-primary hover:text-text-primary transition-all group"
-                      >
-                         {suggestion}
-                         <span className="block mt-2 text-[11px] text-text-muted group-hover:text-brand-primary">Try this prompt &rarr;</span>
-                      </button>
-                   ))}
-                </div>
-             </div>
+            <div className="dashboard-empty">
+              <h2 className="dashboard-empty-title">
+                What do you want to <em>know?</em>
+              </h2>
+              <p className="dashboard-empty-desc">
+                Ask anything. Search the web. Create. Build. Analyse documents.
+              </p>
+
+              <div className="dashboard-suggestions">
+                {[
+                  "Latest AI research papers 2024",
+                  "How does quantum computing work?",
+                  "Write me a Python REST API",
+                  "Summarize today's top tech news"
+                ].map((suggestion, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSend(suggestion)}
+                    className="dashboard-suggestion-btn"
+                  >
+                    {suggestion}
+                    <span className="dashboard-suggestion-try">
+                      Try this prompt →
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
 
           {messages.map((msg) => (
@@ -106,24 +104,23 @@ const DashboardPage = () => {
           ))}
 
           {currentResponse && (
-            <MessageBubble 
-               message={{ content: currentResponse }} 
-               isAi={true} 
-               isStreaming={true} 
+            <MessageBubble
+              message={{ content: currentResponse }}
+              isAi={true}
+              isStreaming={true}
             />
           )}
-          
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Bar */}
-        <div className="border-t border-border-subtle bg-bg-base/80 backdrop-blur-md">
-           <ChatInput 
-             onSend={handleSend} 
-             isLoading={isLoading} 
-             useWebSearch={useWebSearch}
-             setUseWebSearch={setUseWebSearch}
-           />
+        <div className="dashboard-input-wrapper">
+          <ChatInput
+            onSend={handleSend}
+            isLoading={isLoading}
+            useWebSearch={useWebSearch}
+            setUseWebSearch={setUseWebSearch}
+          />
         </div>
       </div>
     </AppShell>
