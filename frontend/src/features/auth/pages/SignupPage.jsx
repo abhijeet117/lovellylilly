@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../../components/layout/AuthLayout';
 import { useAuth } from '../hooks/useAuth';
@@ -13,6 +13,22 @@ const SignupPage = () => {
   const [error, setError] = useState('');
   const { signup } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    function pwStr(pw){
+      const f=document.getElementById('str-fill')
+      if(!f) return
+      const s=[pw.length>=8,/[A-Z]/.test(pw),/[0-9]/.test(pw),/[^a-zA-Z0-9]/.test(pw)].filter(Boolean).length
+      f.style.width=['0%','28%','55%','78%','100%'][s]
+      f.style.background=['#c0392b','#e67e22','#f1c40f','#27ae60','#27ae60'][s]
+    }
+    window.pwStr=pwStr
+    return () => {
+      if (window.pwStr === pwStr) {
+        delete window.pwStr
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,16 +55,6 @@ const SignupPage = () => {
       setLoading(false);
     }
   };
-
-  const strengthScore = [
-    password.length >= 8,
-    /[A-Z]/.test(password),
-    /[0-9]/.test(password),
-    /[^a-zA-Z0-9]/.test(password),
-  ].filter(Boolean).length;
-
-  const strengthWidth = ['0%', '28%', '55%', '78%', '100%'][strengthScore];
-  const strengthColor = ['#c0392b', '#e67e22', '#f1c40f', '#27ae60', '#27ae60'][strengthScore];
 
   return (
     <AuthLayout
@@ -93,8 +99,8 @@ const SignupPage = () => {
         <div className="fg"><label className="fl">Email Address</label><input className="fi" type="email" placeholder="amara@example.com" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
         <div className="fg">
           <label className="fl">Password</label>
-          <input className="fi" type="password" placeholder="Min. 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <div className="str-bar"><div className="str-fill" style={{ width: strengthWidth, background: strengthColor }} /></div>
+          <input className="fi" type="password" placeholder="Min. 8 characters" value={password} onChange={(e) => setPassword(e.target.value)} onInput={(e) => window.pwStr(e.target.value)} />
+          <div className="str-bar"><div className="str-fill" id="str-fill" /></div>
         </div>
         <div className="fg"><label className="fl">Confirm Password</label><input className="fi" type="password" placeholder="Re-enter password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></div>
 

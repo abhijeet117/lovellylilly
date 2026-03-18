@@ -18,7 +18,62 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const closeMobile = () => setMobileOpen(false);
+  useEffect(() => {
+    const NAV = document.getElementById('nav')
+    const SECS = ['hero','features','how','pricing','about','cta']
+    const onNavScroll = () => {
+      NAV.classList.toggle('scrolled',window.scrollY>24)
+      let cur=''
+      SECS.forEach(id=>{
+        const el=document.getElementById(id)
+        if(el && el.getBoundingClientRect().top<=120) cur=id
+      })
+      document.querySelectorAll('.nav-links a').forEach(a=>
+        a.classList.toggle('active',a.dataset.s===cur)
+      )
+    }
+
+    window.addEventListener('scroll', onNavScroll, { passive: true })
+    onNavScroll()
+
+    return () => {
+      window.removeEventListener('scroll', onNavScroll)
+    }
+  }, [])
+
+  useEffect(() => {
+    const DRAWER=document.getElementById('mob-drawer')
+    const HAM=document.getElementById('ham')
+    let mob=false
+
+    function closeMob(){
+      DRAWER.classList.remove('open'); mob=false
+      HAM.innerHTML='<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'
+    }
+    window.closeMob = closeMob
+
+    const onHamClick = () => {
+      mob=!mob; DRAWER.classList.toggle('open',mob)
+      HAM.innerHTML=mob
+        ?'<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+        :'<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'
+    }
+    HAM.addEventListener('click', onHamClick)
+
+    return () => {
+      HAM.removeEventListener('click', onHamClick)
+      if (window.closeMob === closeMob) {
+        delete window.closeMob
+      }
+    }
+  }, [])
+
+  const closeMobile = () => {
+    setMobileOpen(false);
+    if (typeof window.closeMob === 'function') {
+      window.closeMob();
+    }
+  };
 
   return (
     <>

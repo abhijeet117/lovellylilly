@@ -7,38 +7,34 @@ const CustomCursor = () => {
     const HAL = document.getElementById('cur-halo')
     let mx=0,my=0,rx=0,ry=0,hx=0,hy=0
 
-    const onMouseMove = (e) => {
+    const onMouseMove = e => {
       mx=e.clientX; my=e.clientY
-      if(DOT) { DOT.style.left=mx+'px'; DOT.style.top=my+'px' }
+      DOT.style.left=mx+'px'; DOT.style.top=my+'px'
     }
     document.addEventListener('mousemove', onMouseMove)
-    
-    let reqId;
-    ;(function loop(){
+    let reqId = 0
+    ;(function loop() {
       rx+=(mx-rx)*.14; ry+=(my-ry)*.14
       hx+=(mx-hx)*.06; hy+=(my-hy)*.06
-      if(RNG) { RNG.style.left=rx+'px'; RNG.style.top=ry+'px' }
-      if(HAL) { HAL.style.left=hx+'px'; HAL.style.top=hy+'px' }
+      RNG.style.left=rx+'px'; RNG.style.top=ry+'px'
+      HAL.style.left=hx+'px'; HAL.style.top=hy+'px'
       reqId = requestAnimationFrame(loop)
     })()
 
-    const onMouseEnter = () => document.body.classList.add('is-hovering')
-    const onMouseLeave = () => document.body.classList.remove('is-hovering')
-    const onMouseDown = () => document.body.classList.add('is-clicking')
-    const onMouseUp = () => document.body.classList.remove('is-clicking')
-
-    const attachHover = () => {
-      document.querySelectorAll('a, button, .bc, .pc, input, label, .oauth-btn').forEach(el=>{
-        el.removeEventListener('mouseenter', onMouseEnter)
-        el.removeEventListener('mouseleave', onMouseLeave)
+    const hov = []
+    function addHov(sel){
+      document.querySelectorAll(sel).forEach(el=>{
+        const onMouseEnter = () => document.body.classList.add('is-hovering')
+        const onMouseLeave = () => document.body.classList.remove('is-hovering')
         el.addEventListener('mouseenter', onMouseEnter)
         el.addEventListener('mouseleave', onMouseLeave)
+        hov.push({ el, onMouseEnter, onMouseLeave })
       })
     }
-    
-    attachHover();
-    const observer = new MutationObserver(attachHover);
-    observer.observe(document.body, { childList: true, subtree: true });
+    addHov('a,button,.bc,.pc,.how-step,input,label,.oauth-btn')
+
+    const onMouseDown = () => document.body.classList.add('is-clicking')
+    const onMouseUp = () => document.body.classList.remove('is-clicking')
 
     document.addEventListener('mousedown', onMouseDown)
     document.addEventListener('mouseup', onMouseUp)
@@ -48,7 +44,10 @@ const CustomCursor = () => {
       document.removeEventListener('mousedown', onMouseDown)
       document.removeEventListener('mouseup', onMouseUp)
       cancelAnimationFrame(reqId)
-      observer.disconnect()
+      hov.forEach(({ el, onMouseEnter, onMouseLeave }) => {
+        el.removeEventListener('mouseenter', onMouseEnter)
+        el.removeEventListener('mouseleave', onMouseLeave)
+      })
     }
   }, [])
 

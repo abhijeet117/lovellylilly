@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import CustomCursor from '../components/ui/CustomCursor';
+import { initScrollReveal } from '../utils/scrollReveal';
+import { initCardTilt } from '../utils/cardTilt';
 import '../components/ui/Button.css';
 import '../components/ui/Card.css';
 import './LandingPage.css';
@@ -9,6 +11,60 @@ import './LandingPage.css';
 const LandingPage = () => {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const cleanupScrollReveal = initScrollReveal()
+    const cleanupCardTilt = initCardTilt('.bc, .pc')
+
+    const LINES=[
+      {u:true,  t:'What is the relationship between language and thought?'},
+      {u:false, t:'Philosophers have debated this for centuries. Sapir-Whorf argues language shapes the very boundaries of cognition...'},
+      {u:true,  t:'Is that deterministic or probabilistic?'},
+      {u:false, t:'The strong version is largely discredited. Linguistic relativity — the weak form — has solid empirical grounding...'},
+      {u:true,  t:'Give me a concrete example involving colour perception.'},
+      {u:false, t:'Russian speakers have "siniy" (dark blue) and "goluboy" (light blue). They detect shade differences ~120ms faster...'},
+    ]
+
+    const terminalTimeouts = []
+    function buildTerminal(){
+      const body=document.getElementById('t-body')
+      body.innerHTML=''
+      let delay=500
+      LINES.forEach(ln=>{
+        const row=document.createElement('div')
+        row.className='t-row'
+        row.innerHTML=ln.u
+          ?`<span class="t-prompt">›</span><span class="t-user">${ln.t}</span>`
+          :`<span class="t-llabel">L</span><span class="t-ai">${ln.t}</span>`
+        body.appendChild(row)
+        const rowTimeout = setTimeout(()=>row.classList.add('show'),delay)
+        terminalTimeouts.push(rowTimeout)
+        delay+=700+ln.t.length*7
+      })
+      const cur=document.createElement('div')
+      cur.className='t-row show'
+      cur.innerHTML=`<span class="t-prompt">›</span><span class="blink"></span>`
+      const cursorTimeout = setTimeout(()=>body.appendChild(cur),delay)
+      terminalTimeouts.push(cursorTimeout)
+    }
+    buildTerminal()
+    const terminalInterval = setInterval(buildTerminal,14000)
+
+    const TW=['Contextual Memory','·','Async Threads','·','E2E Security','·','Live Intelligence','·','Admin Dashboard','·','Model Transparency','·','Deep Conversations','·']
+    const TKR=document.getElementById('ticker')
+    ;[...TW,...TW,...TW].forEach(w=>{
+      const s=document.createElement('span')
+      s.className=w==='·'?'tk-sep':'tk-w'
+      s.textContent=w
+      TKR.appendChild(s)
+    })
+
+    return () => {
+      terminalTimeouts.forEach(t => clearTimeout(t))
+      clearInterval(terminalInterval)
+      if (typeof cleanupScrollReveal === 'function') cleanupScrollReveal()
+      if (typeof cleanupCardTilt === 'function') cleanupCardTilt()
+    }
+  }, [])
   const handleSignup = (e) => {
     e.preventDefault();
     navigate('/signup');
