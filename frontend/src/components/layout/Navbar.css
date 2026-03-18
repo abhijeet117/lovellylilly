@@ -48,6 +48,7 @@
 }
 .sw:hover    { transform:scale(1.25); }
 .sw.on { border-color:var(--clr-accent); }
+.mob-swatches-inline .sw { width:22px; height:22px; }
 
 .nav-r { display:flex; gap:12px; align-items:center; }
 

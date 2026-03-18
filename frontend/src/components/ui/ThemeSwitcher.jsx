@@ -7,7 +7,7 @@ const THEMES = [
   { key: 'ocean', bg: '#071828', title: 'Ocean' },
 ];
 
-const ThemeSwitcher = ({ className = '' }) => {
+const ThemeSwitcher = ({ id, className = '' }) => {
   const [active, setActive] = useState(() => {
     try { return localStorage.getItem('ll-theme') || 'dark'; } catch { return 'dark'; }
   });
@@ -44,7 +44,7 @@ const ThemeSwitcher = ({ className = '' }) => {
   }, []);
 
   return (
-    <div className={`swatches ${className}`}>
+    <div id={id} className={`swatches ${className}`}>
       {THEMES.map((t) => (
         <button
           key={t.key}

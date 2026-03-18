@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/hooks/useAuth';
 import ThemeSwitcher from '../ui/ThemeSwitcher';
 import './Navbar.css';
@@ -23,101 +23,154 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
   return (
     <>
       <nav id="nav" className={`${scrolled ? 'scrolled' : ''}`}>
-        {/* Left: Logo + Sidebar toggle */}
-        <div className="nav-l">
-          {showSidebar && (
-            <button
-              onClick={onToggleSidebar}
-              className="ham"
-              aria-label="Toggle sidebar"
-            >
-              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-          )}
-          <Link to="/" className="nav-logo">
-            Lovelly<em>Lilly</em>
-          </Link>
-        </div>
+        {showSidebar && !isLanding && (
+          <button
+            onClick={onToggleSidebar}
+            className="ham"
+            aria-label="Toggle sidebar"
+          >
+            <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        )}
 
-        {/* Center: Landing nav links */}
+        <a
+          className="nav-logo"
+          href={isLanding ? '#hero' : '/'}
+          onClick={(e) => {
+            if (!isLanding) {
+              e.preventDefault();
+              navigate('/');
+            }
+          }}
+        >
+          Lovelly<em>Lilly</em>
+        </a>
+
         {isLanding && (
-          <ul className="nav-links">
+          <ul className="nav-links" id="nav-links">
             {[
-              { label: 'Features', href: '#features' },
-              { label: 'How It Works', href: '#how' },
-              { label: 'Pricing', href: '#pricing' },
-              { label: 'About', href: '#about' },
-            ].map(link => (
+              { label: 'Features', href: '#features', section: 'features' },
+              { label: 'How It Works', href: '#how', section: 'how' },
+              { label: 'Pricing', href: '#pricing', section: 'pricing' },
+              { label: 'About', href: '#about', section: 'about' },
+              { label: 'Contact', href: '#cta', section: 'cta' },
+            ].map((link) => (
               <li key={link.label}>
-                <a href={link.href}>{link.label}</a>
+                <a href={link.href} data-s={link.section} onClick={closeMobile}>
+                  {link.label}
+                </a>
               </li>
             ))}
           </ul>
         )}
 
-        {/* Right: Swatches + CTAs */}
         <div className="nav-r">
-          <div className="swatches swatches-desktop">
-            <ThemeSwitcher />
-          </div>
-          
+          <ThemeSwitcher id="swatches" className="swatches-desktop" />
+
           {isLanding && !user && (
-            <div className="nav-cta-btns">
-              <button className="btn-ghost-sm" onClick={() => navigate('/login')}>
+            <div className="nav-cta-btns" style={{ display: 'flex', gap: '10px' }}>
+              <a
+                className="btn-ghost-sm"
+                id="btn-login"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/login');
+                }}
+              >
                 Sign In
-              </button>
-              <button className="btn-solid-sm" onClick={() => navigate('/signup')}>
+              </a>
+              <a
+                className="btn-solid-sm"
+                id="btn-reg"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/signup');
+                }}
+              >
                 Get Started
-              </button>
+              </a>
             </div>
           )}
 
           {user && !isLanding && (
-            <div className="nav-cta-btns">
-              <button className="btn-ghost-sm" onClick={() => navigate('/settings')}>
+            <div className="nav-cta-btns" style={{ display: 'flex', gap: '10px' }}>
+              <a
+                className="btn-ghost-sm"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/settings');
+                }}
+              >
                 Settings
-              </button>
+              </a>
             </div>
           )}
 
-          {/* Hamburger for mobile */}
           <button
             className="ham"
+            id="ham"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
             {mobileOpen ? (
-              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <svg viewBox="0 0 24 24" id="ham-ico"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             ) : (
-              <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              <svg viewBox="0 0 24 24" id="ham-ico"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             )}
           </button>
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
-      <div className={`mob-drawer ${mobileOpen ? 'open' : ''}`}>
+      <div className={`mob-drawer ${mobileOpen ? 'open' : ''}`} id="mob-drawer">
         {isLanding && (
           <>
             <a className="mob-lnk" href="#features" onClick={closeMobile}>Features</a>
             <a className="mob-lnk" href="#how" onClick={closeMobile}>How It Works</a>
             <a className="mob-lnk" href="#pricing" onClick={closeMobile}>Pricing</a>
             <a className="mob-lnk" href="#about" onClick={closeMobile}>About</a>
+            <a className="mob-lnk" href="#cta" onClick={closeMobile}>Contact</a>
           </>
         )}
         {!isLanding && (
           <>
-            <a className="mob-lnk" onClick={() => { navigate('/dashboard'); closeMobile(); }}>Dashboard</a>
-            <a className="mob-lnk" onClick={() => { navigate('/settings'); closeMobile(); }}>Settings</a>
+            <a className="mob-lnk" href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); closeMobile(); }}>Dashboard</a>
+            <a className="mob-lnk" href="#" onClick={(e) => { e.preventDefault(); navigate('/settings'); closeMobile(); }}>Settings</a>
           </>
         )}
-        <div className="mob-swatches">
-          <ThemeSwitcher />
+
+        <div style={{ display: 'flex', gap: '8px', paddingTop: '14px' }}>
+          <ThemeSwitcher className="mob-swatches-inline" />
         </div>
+
         {isLanding && !user && (
-          <div className="mob-actions">
-            <button className="btn-ghost-sm" onClick={() => { navigate('/login'); closeMobile(); }}>Sign In</button>
-            <button className="btn-solid-sm" onClick={() => { navigate('/signup'); closeMobile(); }}>Get Started</button>
+          <div style={{ display: 'flex', gap: '10px', paddingTop: '10px' }}>
+            <a
+              className="btn-ghost-sm"
+              id="mob-login"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/login');
+                closeMobile();
+              }}
+            >
+              Sign In
+            </a>
+            <a
+              className="btn-solid-sm"
+              id="mob-reg"
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/signup');
+                closeMobile();
+              }}
+            >
+              Get Started
+            </a>
           </div>
         )}
       </div>
