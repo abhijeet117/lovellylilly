@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import AuthLayout from '../../../components/layout/AuthLayout';
-import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { verifyEmail } from '../services/auth.api';
 
@@ -52,14 +51,12 @@ const VerifyEmailPage = () => {
       tagline="One more step to unlock your AI workspace."
     >
       <div style={{ textAlign: 'center' }}>
-        <motion.div
-          animate={{ y: [0, -8, 0] }}
-          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+        <div
           style={{
             width: '72px',
             height: '72px',
             borderRadius: '50%',
-            background: 'rgba(var(--clr-accent-rgb), 0.12)',
+            background: 'color-mix(in srgb, var(--clr-accent) 14%, transparent)',
             border: '1px solid var(--clr-accent)',
             display: 'flex',
             alignItems: 'center',
@@ -71,7 +68,7 @@ const VerifyEmailPage = () => {
           }}
         >
           @
-        </motion.div>
+        </div>
 
         {isVerifying ? (
           <>
@@ -97,8 +94,8 @@ const VerifyEmailPage = () => {
               {verifyError || 'This verification link is no longer valid.'}
             </p>
             <button
-              className="btn-ghost"
-              style={{ width: '100%', justifyContent: 'center' }}
+              className="f-submit"
+              style={{ width: '100%', justifyContent: 'center', background: 'var(--clr-card)', color: 'var(--clr-text)', border: '1px solid var(--clr-border)', clipPath: 'none' }}
               onClick={handleResend}
               disabled={cooldown > 0}
             >
@@ -112,8 +109,8 @@ const VerifyEmailPage = () => {
               We sent a verification link to your email address. Click it to activate your account.
             </p>
             <button
-              className="btn-ghost"
-              style={{ width: '100%', justifyContent: 'center' }}
+              className="f-submit"
+              style={{ width: '100%', justifyContent: 'center', background: 'var(--clr-card)', color: 'var(--clr-text)', border: '1px solid var(--clr-border)', clipPath: 'none' }}
               onClick={handleResend}
               disabled={cooldown > 0}
             >

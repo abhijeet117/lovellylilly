@@ -2,9 +2,12 @@ import { useEffect } from 'react';
 
 const CustomCursor = () => {
   useEffect(() => {
+    if (window.matchMedia('(pointer: coarse)').matches) return undefined;
+
     const DOT = document.getElementById('cur-dot')
     const RNG = document.getElementById('cur-ring')
     const HAL = document.getElementById('cur-halo')
+    if (!DOT || !RNG || !HAL) return undefined;
     let mx=0,my=0,rx=0,ry=0,hx=0,hy=0
 
     const onMouseMove = e => {

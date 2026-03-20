@@ -3,18 +3,18 @@ import AppShell from '../../../components/layout/AppShell';
 import ChatInput from '../components/ChatInput';
 import MessageBubble from '../components/MessageBubble';
 import { useSocket } from '../../../context/SocketContext';
-import { motion, AnimatePresence } from 'framer-motion';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [useWebSearch, setUseWebSearch] = useState(false);
   const [currentResponse, setCurrentResponse] = useState('');
 
   const { socket, connected } = useSocket();
   const messagesEndRef = useRef(null);
+  const messageIdRef = useRef(0);
+  const currentResponseRef = useRef('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,46 +27,63 @@ const DashboardPage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('stream_chunk', (chunk) => {
-      setCurrentResponse(prev => prev + chunk.content);
-    });
+    const handleChunk = (chunk) => {
+      const nextPart = chunk?.content || '';
+      setCurrentResponse((prev) => {
+        const next = prev + nextPart;
+        currentResponseRef.current = next;
+        return next;
+      });
+    };
 
-    socket.on('stream_done', (data) => {
-      setMessages(prev => [...prev, {
-        id: Date.now(),
-        content: currentResponse,
+    const handleDone = (data) => {
+      const finalResponse = currentResponseRef.current.trim();
+      if (!finalResponse) {
+        setIsLoading(false);
+        return;
+      }
+
+      setMessages((prev) => [...prev, {
+        id: ++messageIdRef.current,
+        content: finalResponse,
         isAi: true,
         sources: data.sources,
-        suggestions: data.followUpSuggestions
+        suggestions: data.followUpSuggestions,
       }]);
       setCurrentResponse('');
+      currentResponseRef.current = '';
       setIsLoading(false);
-    });
+    };
 
-    socket.on('error', (err) => {
+    const handleError = () => {
+      currentResponseRef.current = '';
       setIsLoading(false);
-    });
+    };
+
+    socket.on('stream_chunk', handleChunk);
+    socket.on('stream_done', handleDone);
+    socket.on('error', handleError);
 
     return () => {
-      socket.off('stream_chunk');
-      socket.off('stream_done');
-      socket.off('error');
+      socket.off('stream_chunk', handleChunk);
+      socket.off('stream_done', handleDone);
+      socket.off('error', handleError);
     };
-  }, [socket, currentResponse]);
+  }, [socket]);
 
   const handleSend = (text) => {
     if (!text.trim() || !connected) return;
-    const userMessage = { id: Date.now(), content: text, isAi: false };
-    setMessages(prev => [...prev, userMessage]);
+    const userMessage = { id: ++messageIdRef.current, content: text, isAi: false };
+    setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
     setCurrentResponse('');
+    currentResponseRef.current = '';
     socket.emit('send_message', { content: text, useWebSearch, chatId: 'new' });
   };
 
   return (
     <AppShell showSidebar={true}>
       <div className="dashboard-container">
-        {/* Messages */}
         <div className="dashboard-messages">
           {messages.length === 0 && !currentResponse && (
             <div className="dashboard-empty">
@@ -79,10 +96,10 @@ const DashboardPage = () => {
 
               <div className="dashboard-suggestions">
                 {[
-                  "Latest AI research papers 2024",
-                  "How does quantum computing work?",
-                  "Write me a Python REST API",
-                  "Summarize today's top tech news"
+                  'Latest AI research papers 2024',
+                  'How does quantum computing work?',
+                  'Write me a Python REST API',
+                  "Summarize today's top tech news",
                 ].map((suggestion, i) => (
                   <button
                     key={i}
@@ -91,7 +108,7 @@ const DashboardPage = () => {
                   >
                     {suggestion}
                     <span className="dashboard-suggestion-try">
-                      Try this prompt →
+                      Try this prompt {'->'}
                     </span>
                   </button>
                 ))}
@@ -113,7 +130,6 @@ const DashboardPage = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Bar */}
         <div className="dashboard-input-wrapper">
           <ChatInput
             onSend={handleSend}

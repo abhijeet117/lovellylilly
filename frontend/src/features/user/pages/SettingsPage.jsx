@@ -5,7 +5,7 @@ import Button from '../../../components/ui/Button';
 import Input  from '../../../components/ui/Input';
 import {
   User, Shield, CreditCard, Key, Bell,
-  Smartphone, Check, LogOut
+  Smartphone, LogOut
 } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 import { useAuth } from '../../auth/hooks/useAuth';
@@ -34,9 +34,9 @@ const SettingsPage = () => {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '28px', flexDirection: 'row' }}>
+        <div style={{ display: 'flex', gap: '28px', flexDirection: 'row', flexWrap: 'wrap' }}>
           {/* Tab Nav */}
-          <div style={{ width: '240px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ width: 'min(240px, 100%)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {tabs.map(tab => (
               <button
                 key={tab.id}
@@ -79,7 +79,7 @@ const SettingsPage = () => {
                     <Button size="sm">Save Changes</Button>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px', flexWrap: 'wrap' }}>
                     <div style={{ position: 'relative' }}>
                       <div style={{
                         width: '80px', height: '80px', borderRadius: '50%',
@@ -87,7 +87,7 @@ const SettingsPage = () => {
                         alignItems: 'center', justifyContent: 'center',
                         fontSize: '22px', fontFamily: 'var(--f-doll)', color: 'var(--clr-bg)',
                       }}>
-                        {user?.fullName?.split(' ').map(n => n[0]).join('') || 'US'}
+                        {(user?.name || user?.fullName || 'User').split(' ').map(n => n[0]).join('') || 'US'}
                       </div>
                     </div>
                     <div>
@@ -100,8 +100,8 @@ const SettingsPage = () => {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-                    <Input label="Full Name" defaultValue={user?.fullName} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                    <Input label="Full Name" defaultValue={user?.name || user?.fullName} />
                     <Input label="Email Address" defaultValue={user?.email} />
                   </div>
 

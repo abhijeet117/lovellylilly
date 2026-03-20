@@ -7,7 +7,6 @@ import {
   Users, Activity, Database, Cpu, AlertTriangle, Search,
   MoreVertical, ArrowUpRight, ArrowDownRight, LayoutGrid
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement,
@@ -72,7 +71,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Chart + Alerts */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '24px' }}>
           <Card style={{ padding: '24px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <h3 style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '16px', color: 'var(--clr-text)' }}>Growth Metrics</h3>

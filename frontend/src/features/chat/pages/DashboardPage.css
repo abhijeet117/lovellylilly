@@ -1,7 +1,7 @@
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 72px);
+  height: calc(100dvh - 72px);
 }
 
 .dashboard-messages {
@@ -81,4 +81,16 @@
   border-top: 1px solid var(--clr-border);
   background: color-mix(in srgb, var(--clr-bg) 80%, transparent);
   backdrop-filter: blur(12px);
+}
+
+@media (max-width: 768px) {
+  .dashboard-messages {
+    padding: 16px 12px;
+    gap: 16px;
+  }
+
+  .dashboard-suggestions {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
 }

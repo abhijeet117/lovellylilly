@@ -69,6 +69,12 @@ body::before {
 .is-hovering #cur-dot   { transform:translate(-50%,-50%) scale(1.8); background:var(--clr-accent2); }
 .is-clicking #cur-ring  { width:20px; height:20px; opacity:1; }
 
+@media (pointer: coarse), (max-width: 768px) {
+  body { cursor: auto; }
+  a, button, input, textarea, select, label { cursor: pointer !important; }
+  #cur-dot, #cur-ring, #cur-halo { display: none !important; }
+}
+
 /* ── CONTAINER ───────────────────────────────────────────── */
 .wrap { max-width:1280px; margin:0 auto; padding:0 var(--sp-4); }
 .pad  { padding:var(--sp-12) 0; }

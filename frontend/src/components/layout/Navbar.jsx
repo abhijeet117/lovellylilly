@@ -19,10 +19,14 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
   }, []);
 
   useEffect(() => {
+    if (!isLanding) return undefined;
+
     const NAV = document.getElementById('nav')
     const SECS = ['hero','features','how','pricing','about','cta']
     const onNavScroll = () => {
-      NAV.classList.toggle('scrolled',window.scrollY>24)
+      if (NAV) {
+        NAV.classList.toggle('scrolled',window.scrollY>24)
+      }
       let cur=''
       SECS.forEach(id=>{
         const el=document.getElementById(id)
@@ -39,40 +43,29 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
     return () => {
       window.removeEventListener('scroll', onNavScroll)
     }
-  }, [])
+  }, [isLanding])
 
   useEffect(() => {
-    const DRAWER=document.getElementById('mob-drawer')
-    const HAM=document.getElementById('ham')
-    let mob=false
-
-    function closeMob(){
-      DRAWER.classList.remove('open'); mob=false
-      HAM.innerHTML='<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'
-    }
-    window.closeMob = closeMob
-
-    const onHamClick = () => {
-      mob=!mob; DRAWER.classList.toggle('open',mob)
-      HAM.innerHTML=mob
-        ?'<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
-        :'<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>'
-    }
-    HAM.addEventListener('click', onHamClick)
-
-    return () => {
-      HAM.removeEventListener('click', onHamClick)
-      if (window.closeMob === closeMob) {
-        delete window.closeMob
+    const onResize = () => {
+      if (window.innerWidth > 768) {
+        setMobileOpen(false);
       }
+    };
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
     }
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   const closeMobile = () => {
     setMobileOpen(false);
-    if (typeof window.closeMob === 'function') {
-      window.closeMob();
-    }
   };
 
   return (
@@ -164,71 +157,68 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
             </div>
           )}
 
-          <button
-            className="ham"
-            id="ham"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Menu"
-          >
-            {mobileOpen ? (
-              <svg viewBox="0 0 24 24" id="ham-ico"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            ) : (
-              <svg viewBox="0 0 24 24" id="ham-ico"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            )}
-          </button>
+          {isLanding && (
+            <button
+              className="ham"
+              id="ham"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              aria-label="Menu"
+            >
+              {mobileOpen ? (
+                <svg viewBox="0 0 24 24" id="ham-ico"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              ) : (
+                <svg viewBox="0 0 24 24" id="ham-ico"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              )}
+            </button>
+          )}
         </div>
       </nav>
 
-      <div className={`mob-drawer ${mobileOpen ? 'open' : ''}`} id="mob-drawer">
-        {isLanding && (
-          <>
+      {isLanding && (
+        <>
+          <div className={`mob-drawer ${mobileOpen ? 'open' : ''}`} id="mob-drawer" aria-hidden={!mobileOpen}>
             <a className="mob-lnk" href="#features" onClick={closeMobile}>Features</a>
             <a className="mob-lnk" href="#how" onClick={closeMobile}>How It Works</a>
             <a className="mob-lnk" href="#pricing" onClick={closeMobile}>Pricing</a>
             <a className="mob-lnk" href="#about" onClick={closeMobile}>About</a>
             <a className="mob-lnk" href="#cta" onClick={closeMobile}>Contact</a>
-          </>
-        )}
-        {!isLanding && (
-          <>
-            <a className="mob-lnk" href="#" onClick={(e) => { e.preventDefault(); navigate('/dashboard'); closeMobile(); }}>Dashboard</a>
-            <a className="mob-lnk" href="#" onClick={(e) => { e.preventDefault(); navigate('/settings'); closeMobile(); }}>Settings</a>
-          </>
-        )}
 
-        <div style={{ display: 'flex', gap: '8px', paddingTop: '14px' }}>
-          <ThemeSwitcher className="mob-swatches-inline" />
-        </div>
+            <div style={{ display: 'flex', gap: '8px', paddingTop: '14px' }}>
+              <ThemeSwitcher className="mob-swatches-inline" />
+            </div>
 
-        {isLanding && !user && (
-          <div style={{ display: 'flex', gap: '10px', paddingTop: '10px' }}>
-            <a
-              className="btn-ghost-sm"
-              id="mob-login"
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate('/login');
-                closeMobile();
-              }}
-            >
-              Sign In
-            </a>
-            <a
-              className="btn-solid-sm"
-              id="mob-reg"
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                navigate('/signup');
-                closeMobile();
-              }}
-            >
-              Get Started
-            </a>
+            {!user && (
+              <div style={{ display: 'flex', gap: '10px', paddingTop: '10px' }}>
+                <a
+                  className="btn-ghost-sm"
+                  id="mob-login"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/login');
+                    closeMobile();
+                  }}
+                >
+                  Sign In
+                </a>
+                <a
+                  className="btn-solid-sm"
+                  id="mob-reg"
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/signup');
+                    closeMobile();
+                  }}
+                >
+                  Get Started
+                </a>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+          {mobileOpen && <div className="mob-backdrop" onClick={closeMobile} aria-hidden="true" />}
+        </>
+      )}
     </>
   );
 };

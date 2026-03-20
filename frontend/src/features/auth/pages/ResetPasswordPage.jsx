@@ -55,7 +55,7 @@ const ResetPasswordPage = () => {
         <Input
           label="Confirm Password"
           type="password"
-          placeholder="••••••••"
+          placeholder="********"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
@@ -69,3 +69,4 @@ const ResetPasswordPage = () => {
 };
 
 export default ResetPasswordPage;
+

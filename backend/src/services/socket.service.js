@@ -46,6 +46,10 @@ exports.init = (socketIoInstance) => {
             const startTime = Date.now();
 
             try {
+                if (!content || !String(content).trim()) {
+                    throw new Error("Message content is required");
+                }
+
                 // 1. Detect query mode
                 socket.emit("message_status", { status: "detecting_mode" });
                 const mode = await aiService.detectMode(content);
@@ -98,9 +102,13 @@ exports.init = (socketIoInstance) => {
                 }
 
                 // 4. Get history (Original logic continued)
+                let currentChatId = chatId && chatId !== "new" ? chatId : null;
                 let chat;
                 if (currentChatId) {
-                    chat = await Chat.findById(currentChatId);
+                    chat = await Chat.findOne({ _id: currentChatId, user: socket.user._id });
+                    if (!chat) {
+                        throw new Error("Chat not found");
+                    }
                 }
 
                 // Create new chat if it doesn't exist
@@ -193,6 +201,7 @@ exports.init = (socketIoInstance) => {
                 socket.emit("stream_done", {
                     chatId: currentChatId,
                     messageId: assistantMessage._id,
+                    sources,
                     followUpSuggestions
                 });
 

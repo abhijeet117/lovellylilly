@@ -1,31 +1,27 @@
-import React from 'react';
+﻿import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github-dark.css';
 import { Copy, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
 import Badge from '../../../components/ui/Badge';
 
 const MessageBubble = ({ message, isAi, isStreaming }) => {
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(message.content || '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
+    <div
       style={{
         display: 'flex', gap: '14px', maxWidth: '860px', margin: '0 auto', width: '100%',
         flexDirection: isAi ? 'row' : 'row-reverse',
       }}
     >
-      {/* Avatar */}
       <div style={{
         width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -41,7 +37,7 @@ const MessageBubble = ({ message, isAi, isStreaming }) => {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px', alignItems: isAi ? 'flex-start' : 'flex-end' }}>
         {isAi && isStreaming && (
           <Badge variant="info" style={{ animation: 'pulse 2s infinite' }}>
-            🧠 Thinking...
+            Thinking...
           </Badge>
         )}
 
@@ -57,8 +53,8 @@ const MessageBubble = ({ message, isAi, isStreaming }) => {
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeHighlight]}
               components={{
-                p: ({children}) => <p style={{ marginBottom: '12px' }}>{children}</p>,
-                code: ({node, inline, className, children, ...props}) => {
+                p: ({ children }) => <p style={{ marginBottom: '12px' }}>{children}</p>,
+                code: ({ inline, className, children, ...props }) => {
                   const match = /language-(\w+)/.exec(className || '');
                   return !inline ? (
                     <div style={{ position: 'relative', margin: '12px 0', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--clr-border)' }}>
@@ -85,11 +81,11 @@ const MessageBubble = ({ message, isAi, isStreaming }) => {
                     }} {...props}>
                       {children}
                     </code>
-                  )
-                }
+                  );
+                },
               }}
             >
-              {message.content + (isStreaming ? ' |' : '')}
+              {(message.content || '') + (isStreaming ? ' |' : '')}
             </ReactMarkdown>
           </div>
 
@@ -114,7 +110,7 @@ const MessageBubble = ({ message, isAi, isStreaming }) => {
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

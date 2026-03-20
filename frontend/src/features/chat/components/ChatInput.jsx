@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Paperclip, Globe, Mic, ArrowUp } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
   const [text, setText] = useState('');
@@ -57,7 +58,7 @@ const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
 
         {/* Left Actions */}
         <div style={{ position: 'absolute', left: '14px', bottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button type="button" style={{ padding: '4px', color: 'var(--clr-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button type="button" onClick={() => toast('Attachments coming soon')} style={{ padding: '4px', color: 'var(--clr-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
             <Paperclip size={18} />
           </button>
           <button
@@ -75,7 +76,7 @@ const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
 
         {/* Right Actions */}
         <div style={{ position: 'absolute', right: '12px', bottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button type="button" style={{ padding: '4px', color: 'var(--clr-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button type="button" onClick={() => toast('Voice mode coming soon')} style={{ padding: '4px', color: 'var(--clr-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
             <Mic size={18} />
           </button>
           <button

@@ -19,7 +19,7 @@ const LandingPage = () => {
       {u:true,  t:'What is the relationship between language and thought?'},
       {u:false, t:'Philosophers have debated this for centuries. Sapir-Whorf argues language shapes the very boundaries of cognition...'},
       {u:true,  t:'Is that deterministic or probabilistic?'},
-      {u:false, t:'The strong version is largely discredited. Linguistic relativity — the weak form — has solid empirical grounding...'},
+      {u:false, t:'The strong version is largely discredited. Linguistic relativity - the weak form - has solid empirical grounding...'},
       {u:true,  t:'Give me a concrete example involving colour perception.'},
       {u:false, t:'Russian speakers have "siniy" (dark blue) and "goluboy" (light blue). They detect shade differences ~120ms faster...'},
     ]
@@ -27,13 +27,14 @@ const LandingPage = () => {
     const terminalTimeouts = []
     function buildTerminal(){
       const body=document.getElementById('t-body')
+      if (!body) return
       body.innerHTML=''
       let delay=500
       LINES.forEach(ln=>{
         const row=document.createElement('div')
         row.className='t-row'
         row.innerHTML=ln.u
-          ?`<span class="t-prompt">›</span><span class="t-user">${ln.t}</span>`
+          ?`<span class="t-prompt">></span><span class="t-user">${ln.t}</span>`
           :`<span class="t-llabel">L</span><span class="t-ai">${ln.t}</span>`
         body.appendChild(row)
         const rowTimeout = setTimeout(()=>row.classList.add('show'),delay)
@@ -42,25 +43,29 @@ const LandingPage = () => {
       })
       const cur=document.createElement('div')
       cur.className='t-row show'
-      cur.innerHTML=`<span class="t-prompt">›</span><span class="blink"></span>`
+      cur.innerHTML=`<span class="t-prompt">></span><span class="blink"></span>`
       const cursorTimeout = setTimeout(()=>body.appendChild(cur),delay)
       terminalTimeouts.push(cursorTimeout)
     }
     buildTerminal()
     const terminalInterval = setInterval(buildTerminal,14000)
 
-    const TW=['Contextual Memory','·','Async Threads','·','E2E Security','·','Live Intelligence','·','Admin Dashboard','·','Model Transparency','·','Deep Conversations','·']
+    const TW=['Contextual Memory','-','Async Threads','-','E2E Security','-','Live Intelligence','-','Admin Dashboard','-','Model Transparency','-','Deep Conversations','-']
     const TKR=document.getElementById('ticker')
-    ;[...TW,...TW,...TW].forEach(w=>{
-      const s=document.createElement('span')
-      s.className=w==='·'?'tk-sep':'tk-w'
-      s.textContent=w
-      TKR.appendChild(s)
-    })
+    if (TKR) {
+      TKR.innerHTML = ''
+      ;[...TW,...TW,...TW].forEach(w=>{
+        const s=document.createElement('span')
+        s.className=w==='-'?'tk-sep':'tk-w'
+        s.textContent=w
+        TKR.appendChild(s)
+      })
+    }
 
     return () => {
       terminalTimeouts.forEach(t => clearTimeout(t))
       clearInterval(terminalInterval)
+      if (TKR) TKR.innerHTML = ''
       if (typeof cleanupScrollReveal === 'function') cleanupScrollReveal()
       if (typeof cleanupCardTilt === 'function') cleanupCardTilt()
     }
@@ -87,7 +92,7 @@ const LandingPage = () => {
         <div>
           <div className="hero-eyebrow rv d1">
             <div className="eyebrow-pulse" />
-            <span className="lbl">LovellyLilly AI · v2.4.1 · Online</span>
+            <span className="lbl">LovellyLilly AI - v2.4.1 - Online</span>
           </div>
 
           <h1 className="hero-h1 rv d2">
@@ -227,7 +232,7 @@ const LandingPage = () => {
                 </div>
                 <div className="online-row">
                   <div className="online-dot" />
-                  <span className="online-txt">LovellyLilly AI · Model Active · <span style={{ color: 'var(--clr-accent)' }}>status: online</span></span>
+                  <span className="online-txt">LovellyLilly AI - Model Active - <span style={{ color: 'var(--clr-accent)' }}>status: online</span></span>
                 </div>
               </div>
             </div>
@@ -367,7 +372,7 @@ const LandingPage = () => {
                 "Intelligence should be <em>intimate</em>, not industrial.
                 A conversation is a relationship, not a transaction."
               </blockquote>
-              <span className="about-attr rv-sl d3">- Maya Chen, Founder · LovellyLilly AI</span>
+              <span className="about-attr rv-sl d3">- Maya Chen, Founder - LovellyLilly AI</span>
             </div>
 
             <div>
@@ -408,7 +413,7 @@ const LandingPage = () => {
           <div className="cta-nums rv d5">
             <div><div className="cn-n">2.4M+</div><div className="cn-l">Total Chats</div></div>
             <div><div className="cn-n">148K</div><div className="cn-l">Active Users</div></div>
-            <div><div className="cn-n">4.9?</div><div className="cn-l">Avg Rating</div></div>
+            <div><div className="cn-n">4.9/5</div><div className="cn-l">Avg Rating</div></div>
           </div>
         </div>
       </section>
@@ -463,7 +468,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="foot-bottom">
-            <span className="foot-copy">© 2025 LovellyLilly AI Inc. All rights reserved.</span>
+            <span className="foot-copy">(c) 2025 LovellyLilly AI Inc. All rights reserved.</span>
             <span className="foot-madena">Intimacy at scale.</span>
           </div>
         </div>

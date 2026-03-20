@@ -1,17 +1,18 @@
-import React from 'react';
+﻿import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeSwitcher from '../ui/ThemeSwitcher';
+import { MessageSquarePlus, Image, Video, Globe, FileText, Settings } from 'lucide-react';
 
-export default function Sidebar({ isOpen }) {
+export default function Sidebar({ isOpen, isMobile = false }) {
   const navigate = useNavigate();
   const location = useLocation();
   const items = [
-    { label: '+ New Chat', path: '/dashboard', icon: '💬' },
-    { label: 'Image Studio', path: '/studio/image', icon: '🖼' },
-    { label: 'Video Studio', path: '/studio/video', icon: '🎬' },
-    { label: 'Website Builder', path: '/studio/website', icon: '🌐' },
-    { label: 'Documents', path: '/documents', icon: '📄' },
-    { label: 'Settings', path: '/settings', icon: '⚙' },
+    { label: '+ New Chat', path: '/dashboard', icon: MessageSquarePlus },
+    { label: 'Image Studio', path: '/studio/image', icon: Image },
+    { label: 'Video Studio', path: '/studio/video', icon: Video },
+    { label: 'Website Builder', path: '/studio/website', icon: Globe },
+    { label: 'Documents', path: '/documents', icon: FileText },
+    { label: 'Settings', path: '/settings', icon: Settings },
   ];
 
   if (!isOpen) return null;
@@ -28,10 +29,17 @@ export default function Sidebar({ isOpen }) {
         flexDirection: 'column',
         gap: '4px',
         overflowY: 'auto',
+        position: isMobile ? 'fixed' : 'static',
+        top: isMobile ? '72px' : 'auto',
+        left: isMobile ? 0 : 'auto',
+        bottom: isMobile ? 0 : 'auto',
+        zIndex: isMobile ? 640 : 'auto',
+        boxShadow: isMobile ? '0 10px 24px rgba(0,0,0,0.25)' : 'none',
       }}
     >
-      {items.map(item => {
+      {items.map((item) => {
         const isActive = location.pathname === item.path;
+        const Icon = item.icon;
         return (
           <div
             key={item.path}
@@ -52,20 +60,19 @@ export default function Sidebar({ isOpen }) {
               gap: '10px',
               minHeight: '44px',
             }}
-            onMouseEnter={e => {
+            onMouseEnter={(e) => {
               if (!isActive) e.currentTarget.style.background = 'var(--clr-card)';
             }}
-            onMouseLeave={e => {
+            onMouseLeave={(e) => {
               if (!isActive) e.currentTarget.style.background = 'transparent';
             }}
           >
-            <span style={{ fontSize: '14px' }}>{item.icon}</span>
+            <Icon size={14} />
             {item.label}
           </div>
         );
       })}
 
-      {/* Bottom section: theme swatches */}
       <div style={{ marginTop: 'auto', paddingTop: 'var(--sp-3)', borderTop: '1px solid var(--clr-border)' }}>
         <div className="fl" style={{ marginBottom: '8px' }}>Theme</div>
         <ThemeSwitcher />

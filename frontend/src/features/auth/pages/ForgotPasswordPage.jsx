@@ -37,14 +37,16 @@ const ForgotPasswordPage = () => {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 24px', fontSize: '28px',
           }}>
-            ✓
+            OK
           </div>
           <h2 className="auth-form-h">Reset Link Sent</h2>
           <p className="auth-form-sub">Check your email for the password reset link.</p>
-          <Link to="/login">
-            <button className="btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
-              Back to Sign In
-            </button>
+          <Link
+            to="/login"
+            className="f-submit"
+            style={{ width: '100%', justifyContent: 'center', display: 'inline-flex', textDecoration: 'none', background: 'var(--clr-card)', color: 'var(--clr-text)', border: '1px solid var(--clr-border)', clipPath: 'none' }}
+          >
+            Back to Sign In
           </Link>
         </div>
       </AuthLayout>

@@ -89,10 +89,18 @@
   background:var(--clr-surface); border-bottom:1px solid var(--clr-border);
   padding:16px var(--sp-4) 20px;
   display:flex; flex-direction:column; gap:2px;
+  max-height: calc(100dvh - 72px);
+  overflow-y: auto;
   opacity:0; transform:translateY(-10px); pointer-events:none;
   transition:opacity .3s var(--ease-expo), transform .3s var(--ease-expo);
 }
 .mob-drawer.open { opacity:1; transform:translateY(0); pointer-events:all; }
+.mob-backdrop {
+  position: fixed;
+  inset: 72px 0 0 0;
+  z-index: 640;
+  background: rgba(0, 0, 0, 0.3);
+}
 .mob-lnk {
   font-family:var(--f-cotham); font-size:12px; font-weight:700;
   letter-spacing:2.5px; text-transform:uppercase;

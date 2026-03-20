@@ -63,10 +63,9 @@ userSchema.index({ role: 1, createdAt: 1 });
 userSchema.index({ isEmailVerified: 1, createdAt: 1 });
 
 // Hash password before saving
-userSchema.pre("save", async function(next) {
-    if (!this.isModified("password")) return next();
+userSchema.pre("save", async function() {
+    if (!this.isModified("password")) return;
     this.password = await bcrypt.hash(this.password, 12);
-    next();
 });
 
 // Instance method to compare passwords

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import AppShell from '../../../components/layout/AppShell';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
-import { Film, Play, Settings2, Download, Trash2, Sparkles, Clock, Video } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Film, Play, Download, Sparkles, Clock, Video } from 'lucide-react';
 
 const VideoStudioPage = () => {
   const [prompt, setPrompt] = useState('');
@@ -25,8 +24,8 @@ const VideoStudioPage = () => {
   return (
     <AppShell>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
-        <div style={{ display: 'flex', gap: '24px' }}>
-          <div style={{ width: '400px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+          <div style={{ width: 'min(400px, 100%)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--clr-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-bg)' }}>
                 <Film size={20} />
@@ -84,26 +83,24 @@ const VideoStudioPage = () => {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <AnimatePresence>
-                  {results.map(vid => (
-                    <motion.div key={vid.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                      style={{ border: '1px solid var(--clr-border)', overflow: 'hidden' }}>
-                      <div style={{ position: 'relative', aspectRatio: '16/9', background: 'black' }}>
-                        <img src={vid.thumbnail} alt={vid.prompt} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
-                            <Play size={24} />
-                          </div>
+                {results.map(vid => (
+                  <div key={vid.id}
+                    style={{ border: '1px solid var(--clr-border)', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', aspectRatio: '16/9', background: 'black' }}>
+                      <img src={vid.thumbnail} alt={vid.prompt} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.6 }} />
+                      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', border: '1px solid rgba(255,255,255,0.3)' }}>
+                          <Play size={24} />
                         </div>
-                        <span style={{ position: 'absolute', bottom: '10px', left: '10px', padding: '2px 8px', background: 'rgba(0,0,0,0.5)', fontSize: '10px', color: 'white', fontFamily: 'monospace' }}>{vid.duration}s</span>
                       </div>
-                      <div style={{ padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <p style={{ fontSize: '13px', color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)' }}>{vid.prompt}</p>
-                        <Download size={14} style={{ color: 'var(--clr-muted)', cursor: 'pointer' }} />
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                      <span style={{ position: 'absolute', bottom: '10px', left: '10px', padding: '2px 8px', background: 'rgba(0,0,0,0.5)', fontSize: '10px', color: 'white', fontFamily: 'monospace' }}>{vid.duration}s</span>
+                    </div>
+                    <div style={{ padding: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <p style={{ fontSize: '13px', color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)' }}>{vid.prompt}</p>
+                      <Download size={14} style={{ color: 'var(--clr-muted)', cursor: 'pointer' }} />
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

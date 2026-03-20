@@ -6,6 +6,8 @@ const AppError = require("../utils/AppError");
 const generateToken = require("../utils/generateToken");
 const emailService = require("../services/email.service");
 
+const isDevelopmentMode = process.env.NODE_ENV !== "production";
+
 const sendTokenResponse = (user, statusCode, res) => {
     const token = generateToken(user._id);
 
@@ -37,6 +39,12 @@ exports.register = asyncHandler(async (req, res, next) => {
     }
 
     const user = await User.create({ name, email, password });
+
+    if (isDevelopmentMode) {
+        user.isEmailVerified = true;
+        await user.save({ validateBeforeSave: false });
+        return sendTokenResponse(user, 201, res);
+    }
 
     // Create verification token
     const rawToken = crypto.randomBytes(32).toString("hex");
@@ -75,7 +83,7 @@ exports.login = asyncHandler(async (req, res, next) => {
         return next(new AppError("Incorrect email or password", 401));
     }
 
-    if (!user.isEmailVerified) {
+    if (!isDevelopmentMode && !user.isEmailVerified) {
         return next(new AppError("Please verify your email before logging in", 403));
     }
 
@@ -101,7 +109,8 @@ exports.verifyEmail = asyncHandler(async (req, res, next) => {
 
     const tokenRecord = await VerificationToken.findOne({
         token: hashedToken,
-        type: "email_verification"
+        type: "email_verification",
+        expiresAt: { $gt: new Date() }
     });
 
     if (!tokenRecord) {
@@ -150,7 +159,8 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
 
     const tokenRecord = await VerificationToken.findOne({
         token: hashedToken,
-        type: "password_reset"
+        type: "password_reset",
+        expiresAt: { $gt: new Date() }
     });
 
     if (!tokenRecord) {

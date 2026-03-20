@@ -3,10 +3,8 @@ import AppShell from '../../../components/layout/AppShell';
 import Button from '../../../components/ui/Button';
 import Card from '../../../components/ui/Card';
 import {
-  Image as ImageIcon, Settings2, Download, Share2, Trash2,
-  Maximize2, Sparkles, Layers, History, Grid
+  Image as ImageIcon, Settings2, Download, Share2, Sparkles
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const ImageStudioPage = () => {
   const [prompt, setPrompt] = useState('');
@@ -32,9 +30,9 @@ const ImageStudioPage = () => {
   return (
     <AppShell>
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px' }}>
-        <div style={{ display: 'flex', gap: '24px' }}>
+        <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
           {/* Left: Settings */}
-          <div style={{ width: '400px', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ width: 'min(400px, 100%)', flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
               <div style={{
                 width: '40px', height: '40px', borderRadius: '10px',
@@ -119,29 +117,27 @@ const ImageStudioPage = () => {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                <AnimatePresence>
-                  {results.map((img) => (
-                    <motion.div key={img.id} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                      style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', border: '1px solid var(--clr-border)' }}
+                {results.map((img) => (
+                  <div key={img.id}
+                    style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', border: '1px solid var(--clr-border)' }}
+                  >
+                    <img src={img.url} alt={img.prompt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <div style={{
+                      position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
+                      opacity: 0, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                      transition: 'opacity 0.2s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                    onMouseLeave={e => e.currentTarget.style.opacity = '0'}
                     >
-                      <img src={img.url} alt={img.prompt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <div style={{
-                        position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)',
-                        opacity: 0, padding: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                        transition: 'opacity 0.2s',
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                      onMouseLeave={e => e.currentTarget.style.opacity = '0'}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
-                          <button style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Download size={14} /></button>
-                          <button style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Share2 size={14} /></button>
-                        </div>
-                        <p style={{ color: 'white', fontSize: '12px' }}>{img.prompt}</p>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                        <button style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Download size={14} /></button>
+                        <button style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '4px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Share2 size={14} /></button>
                       </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
+                      <p style={{ color: 'white', fontSize: '12px' }}>{img.prompt}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

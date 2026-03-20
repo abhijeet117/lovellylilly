@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import AppShell from '../../../components/layout/AppShell';
 import Button from '../../../components/ui/Button';
-import Card from '../../../components/ui/Card';
-import { Globe, Code, Eye, Send, ExternalLink, Sparkles, Smartphone, Monitor } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Globe, Code, Eye, Sparkles, Smartphone, Monitor } from 'lucide-react';
 
 const WebsiteBuilderPage = () => {
   const [prompt, setPrompt] = useState('');
@@ -20,9 +18,9 @@ const WebsiteBuilderPage = () => {
 
   return (
     <AppShell>
-      <div style={{ display: 'flex', height: 'calc(100vh - 72px)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 72px)', overflow: 'hidden', flexWrap: 'wrap' }}>
         {/* Left */}
-        <div style={{ width: '420px', background: 'var(--clr-surface)', borderRight: '1px solid var(--clr-border)', padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ width: 'min(420px, 100%)', background: 'var(--clr-surface)', borderRight: '1px solid var(--clr-border)', padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--clr-accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--clr-bg)' }}>
               <Globe size={20} />
@@ -117,17 +115,17 @@ const WebsiteBuilderPage = () => {
                 <h3 style={{ fontFamily: 'var(--f-syne)', color: 'var(--clr-text)' }}>Generating...</h3>
               </div>
             ) : activeTab === 'preview' ? (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                style={{ background: 'white', border: '1px solid var(--clr-border)', borderRadius: '6px', margin: '0 auto', overflow: 'hidden', width: viewMode === 'desktop' ? '100%' : '375px', height: viewMode === 'desktop' ? '100%' : '667px' }}>
+              <div
+                style={{ background: 'white', border: '1px solid var(--clr-border)', borderRadius: '6px', margin: '0 auto', overflow: 'hidden', width: viewMode === 'desktop' ? '100%' : 'min(100%, 375px)', height: viewMode === 'desktop' ? '100%' : '667px' }}>
                 <div style={{ width: '100%', height: '44px', background: '#f8f8f8', borderBottom: '1px solid #e5e5e5' }} />
                 <div style={{ padding: '24px' }}>
                   <div style={{ width: '50%', height: '24px', background: '#e5e5e5', borderRadius: '4px', marginBottom: '12px' }} />
                   <div style={{ width: '75%', height: '12px', background: '#f0f0f0', borderRadius: '4px', marginBottom: '8px' }} />
                   <div style={{ width: '60%', height: '12px', background: '#f0f0f0', borderRadius: '4px' }} />
                 </div>
-              </motion.div>
+              </div>
             ) : (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              <div
                 style={{ width: '100%', height: '100%', background: 'var(--clr-bg)', border: '1px solid var(--clr-border)', padding: '20px', fontFamily: 'monospace', fontSize: '13px', color: 'var(--clr-accent)', overflow: 'auto' }}>
                 <pre>{`<!DOCTYPE html>
 <html>
@@ -142,7 +140,7 @@ const WebsiteBuilderPage = () => {
     ...
   </body>
 </html>`}</pre>
-              </motion.div>
+              </div>
             )}
           </div>
         </div>
