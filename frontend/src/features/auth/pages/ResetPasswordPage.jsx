@@ -4,6 +4,7 @@ import AuthLayout from '../../../components/layout/AuthLayout';
 import Input from '../../../components/ui/Input';
 import PasswordStrengthMeter from '../../../components/ui/PasswordStrengthMeter';
 import { toast } from 'react-hot-toast';
+import { resetPassword } from '../services/auth.api';
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState('');
@@ -14,15 +15,18 @@ const ResetPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      return toast.error('Reset link is invalid');
+    }
     if (password !== confirmPassword) {
       return toast.error('Passwords do not match');
     }
     setIsLoading(true);
     try {
-      // API call placeholder
+      await resetPassword(token, password);
       toast.success('Password updated. Please sign in.');
       navigate('/login');
-    } catch (err) {
+    } catch {
       toast.error('Failed to update password');
     } finally {
       setIsLoading(false);

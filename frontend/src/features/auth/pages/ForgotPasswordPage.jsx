@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import AuthLayout from '../../../components/layout/AuthLayout';
 import Input from '../../../components/ui/Input';
 import { toast } from 'react-hot-toast';
+import { forgotPassword } from '../services/auth.api';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -13,10 +14,10 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      // API call placeholder
+      await forgotPassword(email);
       setIsSubmitted(true);
       toast.success('Reset link sent!');
-    } catch (err) {
+    } catch {
       toast.error('Failed to send reset link');
     } finally {
       setIsLoading(false);

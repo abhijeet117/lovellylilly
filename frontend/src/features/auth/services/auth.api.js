@@ -5,24 +5,49 @@ const api = axios.create({
   withCredentials: true
 });
 
+const getUserFromPayload = (payload) => payload?.user ?? payload?.data?.user ?? null;
+const normalizeAuthPayload = (payload = {}) => ({
+  ...payload,
+  user: getUserFromPayload(payload),
+});
+
 export const login = async (email, password) => {
-  const response = await api.post('/auth/login', { email, password });
-  return response.data;
+  const { data } = await api.post('/auth/login', { email, password });
+  return normalizeAuthPayload(data);
 };
 
 export const register = async (userData) => {
-  const response = await api.post('/auth/register', userData); // Backend route is register
-  return response.data;
+  const { data } = await api.post('/auth/register', userData);
+  const normalized = normalizeAuthPayload(data);
+  return {
+    ...normalized,
+    requiresVerification: normalized.requiresVerification ?? !normalized.user
+  };
 };
 
 export const logout = async () => {
-  const response = await api.post('/auth/logout');
-  return response.data;
+  const { data } = await api.post('/auth/logout');
+  return data;
 };
 
 export const getMe = async () => {
-  const response = await api.get('/auth/get-me');
-  return response.data;
+  const { data } = await api.get('/auth/get-me');
+  return normalizeAuthPayload(data);
+};
+
+export const verifyEmail = async (token) => {
+  const { data } = await api.get(`/auth/verify-email/${token}`);
+  return data;
+};
+
+export const forgotPassword = async (email) => {
+  const { data } = await api.post('/auth/forgot-password', { email });
+  return data;
+};
+
+export const resetPassword = async (token, password) => {
+  const { data } = await api.post(`/auth/reset-password/${token}`, { password });
+  return data;
 };
 
 export default api;

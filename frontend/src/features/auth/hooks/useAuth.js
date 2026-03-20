@@ -15,8 +15,9 @@ export function useAuth() {
     setError(null);
     try {
       const response = await authService.login(email, password);
-      // Assuming response structure is { success: true, user: { ... } }
-      setUser(response.user);
+      if (response.user) {
+        setUser(response.user);
+      }
       return response;
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Login failed';
@@ -32,7 +33,9 @@ export function useAuth() {
     setError(null);
     try {
       const response = await authService.register(userData);
-      setUser(response.user);
+      if (response.user) {
+        setUser(response.user);
+      }
       return response;
     } catch (err) {
       const message = err.response?.data?.message || err.message || 'Signup failed';

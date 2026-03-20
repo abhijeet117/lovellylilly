@@ -4,7 +4,8 @@ import AuthLayout from '../../../components/layout/AuthLayout';
 import { useAuth } from '../hooks/useAuth';
 
 const SignupPage = () => {
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,7 +33,7 @@ const SignupPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password || !confirmPassword) {
+    if (!firstName || !email || !password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
@@ -47,8 +48,13 @@ const SignupPage = () => {
     setLoading(true);
     setError('');
     try {
-      await signup({ fullName: name, email, password });
-      navigate('/verify-email');
+      const name = [firstName.trim(), lastName.trim()].filter(Boolean).join(' ');
+      const response = await signup({ name, email, password });
+      if (response.user || response.token || !response.requiresVerification) {
+        navigate('/dashboard');
+      } else {
+        navigate('/verify-email');
+      }
     } catch (err) {
       setError(err.message || 'Signup failed. Please try again.');
     } finally {
@@ -93,8 +99,8 @@ const SignupPage = () => {
 
       <form onSubmit={handleSubmit}>
         <div className="frow2">
-          <div className="fg"><label className="fl">First Name</label><input className="fi" type="text" placeholder="Amara" value={name} onChange={(e) => setName(e.target.value)} /></div>
-          <div className="fg"><label className="fl">Last Name</label><input className="fi" type="text" placeholder="Osei" /></div>
+          <div className="fg"><label className="fl">First Name</label><input className="fi" type="text" placeholder="Amara" value={firstName} onChange={(e) => setFirstName(e.target.value)} /></div>
+          <div className="fg"><label className="fl">Last Name</label><input className="fi" type="text" placeholder="Osei" value={lastName} onChange={(e) => setLastName(e.target.value)} /></div>
         </div>
         <div className="fg"><label className="fl">Email Address</label><input className="fi" type="email" placeholder="amara@example.com" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
         <div className="fg">

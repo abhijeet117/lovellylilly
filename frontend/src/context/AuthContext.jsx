@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useState, useEffect, useMemo } from 'react';
 import * as authService from '../features/auth/services/auth.api';
 
 export const AuthContext = createContext(null);
@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authService.getMe();
       setUser(response.user);
-    } catch (err) {
+    } catch {
       setUser(null);
     } finally {
       setLoading(false);
