@@ -1,5 +1,7 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Globe, Brain, Sparkles, FileText, Check, AlertTriangle, XCircle, Info } from 'lucide-react';
+import { useAnimationConfig } from '../../lib/animations/useAnimationConfig';
 
 const modeVariants = {
   search:   { icon: Globe },
@@ -17,12 +19,13 @@ const statusVariants = {
 };
 
 const Badge = ({ children, variant = 'info', mode, className = '', ...props }) => {
+  const animation = useAnimationConfig();
   const config = mode ? { ...modeVariants[mode], color: 'var(--clr-accent)' } : statusVariants[variant];
   if (!config) return null;
   const Icon = config.icon;
 
   return (
-    <span
+    <motion.span
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '4px',
         padding: '3px 10px',
@@ -33,11 +36,16 @@ const Badge = ({ children, variant = 'info', mode, className = '', ...props }) =
         border: `1px solid color-mix(in srgb, ${config.color} 25%, transparent)`,
       }}
       className={className}
+      initial="hidden"
+      animate="visible"
+      whileHover="hover"
+      exit="exit"
+      variants={animation.badge}
       {...props}
     >
       {Icon && <Icon size={10} />}
       {children || (mode && mode.toUpperCase())}
-    </span>
+    </motion.span>
   );
 };
 

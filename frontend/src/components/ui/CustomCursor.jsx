@@ -1,6 +1,9 @@
 import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const CustomCursor = () => {
+  const location = useLocation();
+
   useEffect(() => {
     if (window.matchMedia('(pointer: coarse)').matches) return undefined;
 
@@ -8,6 +11,7 @@ const CustomCursor = () => {
     const RNG = document.getElementById('cur-ring')
     const HAL = document.getElementById('cur-halo')
     if (!DOT || !RNG || !HAL) return undefined;
+    
     let mx=0,my=0,rx=0,ry=0,hx=0,hy=0
 
     const onMouseMove = e => {
@@ -24,18 +28,6 @@ const CustomCursor = () => {
       reqId = requestAnimationFrame(loop)
     })()
 
-    const hov = []
-    function addHov(sel){
-      document.querySelectorAll(sel).forEach(el=>{
-        const onMouseEnter = () => document.body.classList.add('is-hovering')
-        const onMouseLeave = () => document.body.classList.remove('is-hovering')
-        el.addEventListener('mouseenter', onMouseEnter)
-        el.addEventListener('mouseleave', onMouseLeave)
-        hov.push({ el, onMouseEnter, onMouseLeave })
-      })
-    }
-    addHov('a,button,.bc,.pc,.how-step,input,label,.oauth-btn')
-
     const onMouseDown = () => document.body.classList.add('is-clicking')
     const onMouseUp = () => document.body.classList.remove('is-clicking')
 
@@ -47,12 +39,38 @@ const CustomCursor = () => {
       document.removeEventListener('mousedown', onMouseDown)
       document.removeEventListener('mouseup', onMouseUp)
       cancelAnimationFrame(reqId)
+    }
+  }, [])
+
+  // Re-bind hover states whenever the route changes
+  useEffect(() => {
+    if (window.matchMedia('(pointer: coarse)').matches) return;
+
+    let hov = [];
+    
+    // Slight delay to allow React Router to mount the new page's DOM elements
+    const timer = setTimeout(() => {
+      function addHov(sel){
+        document.querySelectorAll(sel).forEach(el=>{
+          const onMouseEnter = () => document.body.classList.add('is-hovering')
+          const onMouseLeave = () => document.body.classList.remove('is-hovering')
+          el.addEventListener('mouseenter', onMouseEnter)
+          el.addEventListener('mouseleave', onMouseLeave)
+          hov.push({ el, onMouseEnter, onMouseLeave })
+        })
+      }
+      addHov('a,button,.bc,.pc,.how-step,input,label,.oauth-btn')
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
       hov.forEach(({ el, onMouseEnter, onMouseLeave }) => {
         el.removeEventListener('mouseenter', onMouseEnter)
         el.removeEventListener('mouseleave', onMouseLeave)
       })
+      document.body.classList.remove('is-hovering');
     }
-  }, [])
+  }, [location.pathname]);
 
   return (
     <>

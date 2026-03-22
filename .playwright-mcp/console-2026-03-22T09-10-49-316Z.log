@@ -1,0 +1,23 @@
+[     346ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/auth/get-me:0
+[     366ms] Error: useLocation() may be used only in the context of a <Router> component.
+    at invariant (http://localhost:5175/node_modules/.vite/deps/react-router-dom.js?v=853a770e:643:11)
+    at useLocation (http://localhost:5175/node_modules/.vite/deps/react-router-dom.js?v=853a770e:6021:3)
+    at CustomCursor (http://localhost:5175/src/components/ui/CustomCursor.jsx?t=1774170636041:22:20)
+    at Object.react_stack_bottom_frame (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:18509:20)
+    at renderWithHooks (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:5654:24)
+    at updateFunctionComponent (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:7475:21)
+    at beginWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:8525:20)
+    at runWithFiberInDEV (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:997:72)
+    at performUnitOfWork (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:12561:98)
+    at workLoopSync (http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:12424:43)
+[     362ms] [WARNING] %s
+
+%s
+ An error occurred in the <CustomCursor> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=853a770e:6965
+[     369ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5175/api/auth/get-me:0
+[     372ms] [WARNING] WebSocket connection to 'ws://localhost:5175/socket.io/?EIO=4&transport=websocket&sid=eVLyIHr8rSvHRTOwAAC5' failed: WebSocket is closed before the connection is established. @ http://localhost:5175/node_modules/.vite/deps/socket__io-client.js?v=853a770e:1038
+[   19761ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/App.jsx?t=1774170668986:0
+[   19767ms] [ERROR] [hmr] Failed to reload /src/App.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:175
+[   53847ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:5175/src/App.jsx?t=1774170703116:0
+[   53847ms] [ERROR] [hmr] Failed to reload /src/App.jsx. This could be due to syntax errors or importing non-existent modules. (see errors above) @ http://localhost:5175/@vite/client:175

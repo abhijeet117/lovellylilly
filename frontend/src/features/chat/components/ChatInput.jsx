@@ -40,7 +40,7 @@ const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
             background: 'var(--clr-surface)',
             border: '1px solid var(--clr-border)',
             borderRadius: '16px',
-            padding: '16px 56px 16px 48px',
+            padding: '16px 56px 16px 88px',
             fontSize: '15px',
             fontFamily: 'var(--f-lunchtype)',
             color: 'var(--clr-text)',

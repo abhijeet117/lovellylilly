@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './features/auth/hooks/useAuth';
+import { destroyLenis, getLenis, initLenis, scrollToTarget } from './lib/animations/lenis';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -20,6 +21,7 @@ import AdminDashboard from './features/admin/pages/AdminDashboard';
 
 // Components
 import AppShell from './components/layout/AppShell';
+import CustomCursor from './components/ui/CustomCursor';
 
 // Helpers
 const ProtectedRoute = ({ children }) => {
@@ -40,6 +42,38 @@ const PlaceholderPage = ({ title }) => (
 function App() {
   const { loading } = useAuth();
 
+  useLayoutEffect(() => {
+    initLenis();
+
+    return () => {
+      destroyLenis();
+    };
+  }, []);
+
+  useEffect(() => {
+    const onAnchorClick = (event) => {
+      if (!(event.target instanceof Element)) return;
+
+      const anchor = event.target.closest('a[href^="#"]');
+      if (!anchor) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#') return;
+
+      const target = document.querySelector(href);
+      if (!target || !getLenis()) return;
+
+      event.preventDefault();
+      scrollToTarget(href, { offset: -80 });
+    };
+
+    document.addEventListener('click', onAnchorClick);
+
+    return () => {
+      document.removeEventListener('click', onAnchorClick);
+    };
+  }, []);
+
   if (loading) {
      return (
         <div className="min-h-screen bg-bg-base flex items-center justify-center">
@@ -50,6 +84,8 @@ function App() {
 
   return (
     <Router>
+      <CustomCursor />
+      <div id="scroll-progress" />
       <Toaster 
         position="top-right" 
         toastOptions={{

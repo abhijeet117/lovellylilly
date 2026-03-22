@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
-import CustomCursor from '../ui/CustomCursor';
 
 export default function AppShell({ children, showSidebar = true }) {
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 1024);
@@ -22,7 +21,6 @@ export default function AppShell({ children, showSidebar = true }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--clr-bg)' }}>
-      <CustomCursor />
       <Navbar onToggleSidebar={() => setSidebarOpen(p => !p)} showSidebar={showSidebar} />
       <div style={{ display: 'flex', flex: 1, paddingTop: '72px' }}>
         {showSidebar && <Sidebar isOpen={sidebarOpen} isMobile={isMobile} />}

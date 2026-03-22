@@ -1,0 +1,133 @@
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html,
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+.motion-line-wrap,
+.hero-line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero-line em {
+  display: block;
+}
+
+.hero-line-inner {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.motion-nav-link {
+  position: relative;
+  display: inline-flex;
+}
+
+.motion-nav-underline {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: var(--clr-accent);
+  pointer-events: none;
+}
+
+.motion-nav-shell {
+  position: relative;
+}
+
+.motion-mobile-link {
+  overflow: hidden;
+}
+
+.motion-input-wrap {
+  position: relative;
+}
+
+.motion-input-line {
+  position: absolute;
+  inset: auto 0 -1px 0;
+  height: 1px;
+  transform-origin: center;
+  background: currentColor;
+  pointer-events: none;
+}
+
+.motion-button-shell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.motion-button-stack {
+  display: inline-grid;
+  place-items: center;
+}
+
+.motion-button-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: inherit;
+  grid-area: 1 / 1;
+}
+
+.motion-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.motion-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.motion-modal-overlay,
+.motion-modal-content {
+  will-change: transform, opacity;
+}
+
+.rv,
+.rv-sc,
+.rv-sl {
+  opacity: 1;
+  transform: none;
+}
+
+
