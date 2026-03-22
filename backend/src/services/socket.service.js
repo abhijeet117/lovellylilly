@@ -6,6 +6,13 @@ const QueryLog = require("../models/QueryLog.model");
 const aiService = require("./ai.service");
 const searchService = require("./search.service");
 
+// ── Skill Router & Agents (Prompt 5) ────────────────────────────────────────
+const { detectSlashCommand, autoDetectSkills, buildSystemPrompt: buildSkillSystemPrompt, getHelpMessage, SKILL_REGISTRY } = require("../skills/router");
+const { runBrowserAgent } = require("../agents/browser.agent");
+const { runSeoAgent } = require("../agents/seo.agent");
+const { runCodeAgent } = require("../agents/coderunner.agent");
+// ────────────────────────────────────────────────────────────────────────────
+
 let io;
 
 exports.init = (socketIoInstance) => {
@@ -48,6 +55,13 @@ exports.init = (socketIoInstance) => {
             try {
                 if (!content || !String(content).trim()) {
                     throw new Error("Message content is required");
+                }
+
+                // /help shortcut (moved to bypass AI completely)
+                if (content.trim() === '/help') {
+                    socket.emit('stream_chunk', { content: getHelpMessage() });
+                    socket.emit('stream_done', { chatId: data.chatId || "new", messageId: null, sources: [], followUpSuggestions: [] });
+                    return;
                 }
 
                 // 1. Detect query mode
@@ -128,14 +142,76 @@ exports.init = (socketIoInstance) => {
                     .limit(10);
                 const history = historyMetadata.reverse();
 
+                // ── Skill Router Block (Prompt 5) ──────────────────────────────────────
+                let skillSystemPrompt = null;
+                let activeSkills = [];
+                let specialResult = null;
+                let cleanMessage = content;
+
+                // Slash command detection
+                const slash = detectSlashCommand(content);
+                if (slash && !slash.isHelp) {
+                    activeSkills = [{ key: slash.command, skill: slash.skill, score: 10 }];
+                    cleanMessage = slash.cleanMessage || content;
+
+                    if (slash.command === 'browse' || /https?:\/\//.test(cleanMessage)) {
+                        socket.emit('agent_status', { message: '🌐 Browsing the web...', active: true });
+                        specialResult = await runBrowserAgent(cleanMessage);
+                        socket.emit('agent_status', { active: false });
+                    }
+
+                    if (slash.command === 'seo') {
+                        const urlMatch = cleanMessage.match(/https?:\/\/[^\s]+/)?.[0];
+                        if (urlMatch) {
+                            socket.emit('agent_status', { message: '📈 Analyzing SEO...', active: true });
+                            specialResult = await runSeoAgent(urlMatch, socket.user._id);
+                            socket.emit('agent_status', { active: false });
+                        }
+                    }
+
+                    if (slash.command === 'run') {
+                        socket.emit('agent_status', { message: '▶️ Running code...', active: true });
+                        specialResult = await runCodeAgent(cleanMessage);
+                        socket.emit('agent_status', { active: false });
+                    }
+                } else {
+                    // Auto-detect skills from message content
+                    activeSkills = autoDetectSkills(content);
+
+                    // Auto-browse any URLs found in the message
+                    if (/https?:\/\//.test(content)) {
+                        socket.emit('agent_status', { message: '🌐 Browsing...', active: true });
+                        specialResult = await runBrowserAgent(content);
+                        socket.emit('agent_status', { active: false });
+                        if (!activeSkills.find(s => s.key === 'browse') && SKILL_REGISTRY['browse']) {
+                            activeSkills.unshift({ key: 'browse', skill: SKILL_REGISTRY['browse'], score: 5 });
+                        }
+                    }
+                }
+
+                // Build dynamic system prompt from active skills
+                skillSystemPrompt = buildSkillSystemPrompt(activeSkills);
+                if (specialResult?.context) {
+                    skillSystemPrompt += `\n\n## Live Data Retrieved:\n${specialResult.context}`;
+                }
+
+                // Tell frontend which skills are active
+                if (activeSkills.length > 0) {
+                    socket.emit('skills_activated', {
+                        skills: activeSkills.map(s => ({ name: s.skill.name, icon: s.skill.icon }))
+                    });
+                }
+                // ── End Skill Router Block ─────────────────────────────────────────────
+
                 // 4. Stream AI response
                 socket.emit("message_status", { status: "generating" });
                 let fullResponse = "";
                 
                 const stream = aiService.streamResponse({
-                    query: content,
+                    query: cleanMessage,
                     history,
-                    sources
+                    sources,
+                    skillSystemPrompt
                 });
 
                 for await (const chunk of stream) {

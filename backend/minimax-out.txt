@@ -1,0 +1,8 @@
+[dotenv@17.3.1] injecting env (20) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+Testing MiniMax V2 (minimax-m2.5) with key: EXISTS
+Response: {
+  "base_resp": {
+    "status_code": 1004,
+    "status_msg": "login fail: Please carry the API secret key in the 'Authorization' field of the request header"
+  }
+}

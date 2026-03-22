@@ -1,6 +1,0 @@
-[    3420ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5173/api/auth/get-me:0
-[    3745ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5173/api/auth/get-me:0
-[    3751ms] [WARNING] WebSocket connection to 'ws://localhost:5173/socket.io/?EIO=4&transport=websocket&sid=ESaB_Z3F2gMWIm1pAAAB' failed: WebSocket is closed before the connection is established. @ http://localhost:5173/node_modules/.vite/deps/socket__io-client.js?v=853a770e:1038
-[  853183ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5173/api/auth/get-me:0
-[  853339ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:5173/api/auth/get-me:0
-[  853346ms] [WARNING] WebSocket connection to 'ws://localhost:5173/socket.io/?EIO=4&transport=websocket&sid=tZUi93JwXu3RR_c8AAAZ' failed: WebSocket is closed before the connection is established. @ http://localhost:5173/node_modules/.vite/deps/socket__io-client.js?v=853a770e:1038

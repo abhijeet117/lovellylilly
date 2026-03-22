@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Paperclip, Globe, Mic, ArrowUp } from 'lucide-react';
+import { Paperclip, Globe, ArrowUp } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import VoiceControl from '../../../components/voice/VoiceControl';
 
-const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
+const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch, textToSpeak, autoSpeak }) => {
   const [text, setText] = useState('');
   const textareaRef = useRef(null);
 
@@ -12,6 +13,10 @@ const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 160)}px`;
     }
   }, [text]);
+
+  const handleTranscript = (newText) => {
+    setText((prev) => (prev ? prev + ' ' + newText : newText));
+  };
 
   const handleSubmit = (e) => {
     e?.preventDefault();
@@ -76,9 +81,11 @@ const ChatInput = ({ onSend, isLoading, useWebSearch, setUseWebSearch }) => {
 
         {/* Right Actions */}
         <div style={{ position: 'absolute', right: '12px', bottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <button type="button" onClick={() => toast('Voice mode coming soon')} style={{ padding: '4px', color: 'var(--clr-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
-            <Mic size={18} />
-          </button>
+          <VoiceControl
+            onTranscript={handleTranscript}
+            textToSpeak={textToSpeak}
+            autoSpeak={autoSpeak}
+          />
           <button
             type="submit"
             disabled={!text.trim() || isLoading}

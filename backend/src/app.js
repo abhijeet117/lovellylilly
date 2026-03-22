@@ -13,6 +13,8 @@ const chatRouter = require("./routes/chat.routes");
 const messageRouter = require("./routes/message.routes");
 const userRouter = require("./routes/user.routes");
 const adminRouter = require("./routes/admin.routes");
+const executeRouter = require("./routes/execute.routes");
+const seoRouter = require("./routes/seo.routes");
 
 const app = express();
 
@@ -52,6 +54,8 @@ app.use("/api/chats", chatRouter);
 app.use("/api/messages", messageRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/execute", executeRouter);
+app.use("/api/seo", seoRouter);
 
 // app.use("/api/images", require("./routes/image.routes"));
 // app.use("/api/videos", require("./routes/video.routes"));
