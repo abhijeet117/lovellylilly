@@ -11,7 +11,13 @@ export default defineConfig({
       },
       '/socket.io': {
         target: 'http://localhost:5000',
+        changeOrigin: true,
         ws: true,
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            // Suppress noisy ECONNREFUSED when backend restarts
+          });
+        },
       },
     },
   },
