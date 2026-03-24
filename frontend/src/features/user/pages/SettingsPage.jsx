@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AppShell from '../../../components/layout/AppShell';
 import Card   from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
@@ -9,10 +10,34 @@ import {
 } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 import { useAuth } from '../../auth/hooks/useAuth';
+import { updateProfile } from '../services/user.api';
+import { toast } from 'react-hot-toast';
 
 const SettingsPage = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('profile');
+  const [profileName, setProfileName] = useState(user?.name || user?.fullName || '');
+  const [profileEmail, setProfileEmail] = useState(user?.email || '');
+  const [profileBio, setProfileBio] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      await updateProfile({ name: profileName });
+      toast.success('Profile updated');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to save');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -56,7 +81,7 @@ const SettingsPage = () => {
               </button>
             ))}
             <div style={{ margin: '12px 0', borderTop: '1px solid var(--clr-border)' }} />
-            <button style={{
+            <button onClick={handleSignOut} style={{
               display: 'flex', alignItems: 'center', gap: '10px',
               padding: '10px 14px', border: 'none', cursor: 'pointer',
               fontFamily: 'var(--f-lunchtype)', fontSize: '14px',
@@ -76,7 +101,7 @@ const SettingsPage = () => {
                       <h3 style={{ fontFamily: 'var(--f-syne)', fontWeight: 700, fontSize: '18px', color: 'var(--clr-text)' }}>Public Profile</h3>
                       <p style={{ fontSize: '13px', color: 'var(--clr-muted)', fontFamily: 'var(--f-lunchtype)' }}>How others see you on the platform.</p>
                     </div>
-                    <Button size="sm">Save Changes</Button>
+                    <Button size="sm" onClick={handleSaveProfile} loading={isSaving}>Save Changes</Button>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px', flexWrap: 'wrap' }}>
@@ -101,8 +126,8 @@ const SettingsPage = () => {
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
-                    <Input label="Full Name" defaultValue={user?.name || user?.fullName} />
-                    <Input label="Email Address" defaultValue={user?.email} />
+                    <Input label="Full Name" value={profileName} onChange={(e) => setProfileName(e.target.value)} />
+                    <Input label="Email Address" value={profileEmail} onChange={(e) => setProfileEmail(e.target.value)} />
                   </div>
 
                   <div>
@@ -111,6 +136,8 @@ const SettingsPage = () => {
                       className="fi"
                       style={{ width: '100%', height: '96px', resize: 'none' }}
                       placeholder="A few words about yourself..."
+                      value={profileBio}
+                      onChange={(e) => setProfileBio(e.target.value)}
                     />
                   </div>
                 </div>
