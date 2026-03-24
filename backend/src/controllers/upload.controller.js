@@ -35,11 +35,32 @@ exports.uploadDocument = asyncHandler(async (req, res, next) => {
         
         downloadStream.on("end", async () => {
             try {
-                // Temporary mock for parsing since we can't easily run complex libs on every platform in this environment
-                let parsedText = "Content extracted from " + req.file.originalname;
-                
-                // Actual parsing would happen here if libs are available
-                // parsedText = await documentService.parseDocumentBuffer(buffer, req.file.mimetype);
+                let parsedText = "";
+                const mime = req.file.mimetype;
+
+                if (mime === "application/pdf") {
+                    const pdfParse = require("pdf-parse");
+                    const data = await pdfParse(buffer);
+                    parsedText = data.text;
+                } else if (mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+                    const mammoth = require("mammoth");
+                    const result = await mammoth.extractRawText({ buffer });
+                    parsedText = result.value;
+                } else if (mime === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+                    const xlsx = require("xlsx");
+                    const workbook = xlsx.read(buffer, { type: "buffer" });
+                    workbook.SheetNames.forEach(name => {
+                        parsedText += xlsx.utils.sheet_to_csv(workbook.Sheets[name]) + "\n";
+                    });
+                } else if (mime === "text/plain") {
+                    parsedText = buffer.toString("utf-8");
+                } else {
+                    parsedText = buffer.toString("utf-8");
+                }
+
+                if (!parsedText.trim()) {
+                    parsedText = "Content extracted from " + req.file.originalname;
+                }
 
                 doc.parsedText = parsedText;
                 doc.wordCount = parsedText.split(/\s+/).length;
@@ -90,7 +111,7 @@ exports.deleteDoc = asyncHandler(async (req, res, next) => {
 });
 
 exports.chatWithDoc = asyncHandler(async (req, res, next) => {
-    const { question } = req.body;
+    const question = req.body.question || req.body.message;
     const doc = await Document.findOne({ _id: req.params.documentId, user: req.user.id }).select("+parsedText");
 
     if (!doc) return next(new AppError("Document not found", 404));

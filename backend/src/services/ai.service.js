@@ -107,24 +107,34 @@ exports.streamResponse = async function* ({ query, history = [], sources = [], s
 };
 
 exports.detectMode = async (query) => {
-    const model = getFastModel();
-    const response = await model.invoke([
-        new SystemMessage("Classify this query as exactly one phrasing from this list: search, think, create, generate-image, generate-video, build-website. Return only the classification word."),
-        new HumanMessage(`Query: ${query}`)
-    ]);
-    
-    const mode = response.content.toLowerCase().trim();
-    const validModes = ["search", "think", "create", "generate-image", "generate-video", "build-website"];
-    return validModes.includes(mode) ? mode : "think";
+    try {
+        const model = getFastModel();
+        const response = await model.invoke([
+            new SystemMessage("Classify this query as exactly one phrasing from this list: search, think, create, generate-image, generate-video, build-website. Return only the classification word."),
+            new HumanMessage(`Query: ${query}`)
+        ]);
+
+        const mode = response.content.toLowerCase().trim();
+        const validModes = ["search", "think", "create", "generate-image", "generate-video", "build-website"];
+        return validModes.includes(mode) ? mode : "think";
+    } catch (err) {
+        console.error("Mode detection failed, defaulting to think:", err.message);
+        return "think";
+    }
 };
 
 exports.generateAutoTitle = async (firstMessage) => {
-    const model = getFastModel();
-    const response = await model.invoke([
-        new SystemMessage("Generate a short 4–6 word title for a conversation that starts with the provided message. Return only the title, no quotes, no punctuation at the end."),
-        new HumanMessage(firstMessage)
-    ]);
-    return response.content.trim();
+    try {
+        const model = getFastModel();
+        const response = await model.invoke([
+            new SystemMessage("Generate a short 4–6 word title for a conversation that starts with the provided message. Return only the title, no quotes, no punctuation at the end."),
+            new HumanMessage(firstMessage)
+        ]);
+        return response.content.trim();
+    } catch (err) {
+        console.error("Auto-title generation failed:", err.message);
+        return firstMessage.substring(0, 40).trim() || "New Conversation";
+    }
 };
 
 exports.generateFollowUps = async (query, response) => {

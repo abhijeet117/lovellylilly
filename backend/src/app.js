@@ -57,10 +57,10 @@ app.use("/api/admin", adminRouter);
 app.use("/api/execute", executeRouter);
 app.use("/api/seo", seoRouter);
 
-// app.use("/api/images", require("./routes/image.routes"));
-// app.use("/api/videos", require("./routes/video.routes"));
-// app.use("/api/websites", require("./routes/website.routes"));
-// app.use("/api/documents", require("./routes/upload.routes"));
+app.use("/api/images", require("./routes/image.routes"));
+app.use("/api/videos", require("./routes/video.routes"));
+app.use("/api/websites", require("./routes/website.routes"));
+app.use("/api/documents", require("./routes/upload.routes"));
 
 app.get("/api/health", (req, res) => {
     res.status(200).json({

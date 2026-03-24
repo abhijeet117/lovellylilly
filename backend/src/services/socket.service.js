@@ -4,6 +4,7 @@ const Chat = require("../models/Chat.model");
 const Message = require("../models/Message.model");
 const QueryLog = require("../models/QueryLog.model");
 const aiService = require("./ai.service");
+const geminiService = require("./gemini.service");
 const searchService = require("./search.service");
 
 // ── Skill Router & Agents (Prompt 5) ────────────────────────────────────────
@@ -84,30 +85,28 @@ exports.init = (socketIoInstance) => {
                     if (mode === "generate-image") {
                         const style = data.style || "realistic";
                         const aspectRatio = data.aspectRatio || "1:1";
-                        // Booster prompt built in gemini service, but we use mode context here if needed
-                        result = await require("./ai.service").generateImage(content, aspectRatio, style);
-                        // In socket context, we might want to emit a specific event or use stream_done
-                        socket.emit("stream_done", { 
-                            chatId, 
-                            mode: "image", 
+                        result = await geminiService.generateImage(content, aspectRatio, style);
+                        socket.emit("stream_done", {
+                            chatId,
+                            mode: "image",
                             imageUrl: result.imageData,
-                            revisedPrompt: result.revisedPrompt 
+                            revisedPrompt: result.revisedPrompt
                         });
                     } else if (mode === "generate-video") {
                         const aspectRatio = data.aspectRatio || "16:9";
-                        result = await require("./ai.service").generateVideo(content, aspectRatio);
-                        socket.emit("stream_done", { 
-                            chatId, 
-                            mode: "video", 
+                        result = await geminiService.generateVideo(content, aspectRatio);
+                        socket.emit("stream_done", {
+                            chatId,
+                            mode: "video",
                             operationId: result.operationId,
                             status: "pending"
                         });
                     } else if (mode === "build-website") {
                         const type = data.type || "landing-page";
-                        result = await require("./ai.service").generateWebsite(content, type);
-                        socket.emit("stream_done", { 
-                            chatId, 
-                            mode: "website", 
+                        result = await geminiService.generateWebsite(content, type);
+                        socket.emit("stream_done", {
+                            chatId,
+                            mode: "website",
                             fullHtml: result.fullHtml,
                             title: result.title
                         });
