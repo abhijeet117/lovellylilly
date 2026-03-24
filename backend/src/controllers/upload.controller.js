@@ -29,9 +29,14 @@ exports.uploadDocument = asyncHandler(async (req, res, next) => {
         // This is a simplified version. In a real GridFS setup, you'd stream the file.
         const gfs = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "documents" });
         const downloadStream = gfs.openDownloadStream(req.file.id);
-        
+
         let buffer = Buffer.alloc(0);
         downloadStream.on("data", chunk => buffer = Buffer.concat([buffer, chunk]));
+        downloadStream.on("error", async (err) => {
+            console.error("GridFS download error:", err);
+            doc.status = "failed";
+            await doc.save();
+        });
         
         downloadStream.on("end", async () => {
             try {
