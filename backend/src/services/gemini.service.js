@@ -1,105 +1,139 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const axios = require("axios");
 const AppError = require("../utils/AppError");
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Lazy-init Gemini SDK: avoid crash at module load if GEMINI_API_KEY is not yet set
+let _genAI = null;
+const getGenAI = () => {
+    if (!_genAI) {
+        if (!process.env.GEMINI_API_KEY) {
+            throw new AppError("GEMINI_API_KEY is not configured", 500);
+        }
+        _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    }
+    return _genAI;
+};
+
+// ── Image Generation via Pollinations.ai ────────────────────────────────────
+
+// Map aspect ratio strings to pixel dimensions
+const ASPECT_DIMENSIONS = {
+    "1:1":  { width: 1024, height: 1024 },
+    "16:9": { width: 1280, height: 720 },
+    "9:16": { width: 720, height: 1280 },
+};
+
+// Auth header for Pollinations API (removes rate limits, watermark)
+const pollinationsHeaders = () => {
+    const key = process.env.POLLINATIONS_API_KEY;
+    return key ? { Authorization: `Bearer ${key}` } : {};
+};
 
 exports.generateImage = async (prompt, aspectRatio = "1:1", style = "realistic") => {
     try {
-        const model = genAI.getGenerativeModel({ model: process.env.GEMINI_IMAGE_MODEL || "imagen-3.0-generate-002" });
-        
-        // Quality booster suffix
-        const qualityBooster = "High quality, detailed, professional. LovellyLilly AI generation.";
-        const fullPrompt = `Style: ${style}. Aspect Ratio: ${aspectRatio}. Prompt: ${prompt}. ${qualityBooster}`;
-        
-        // Note: Imagen 3 API via Node SDK might vary depending on specific library version/features.
-        // This is a standard structure for generative models. 
-        // Some Imagen implementations use different endpoints or methods.
-        const result = await model.generateContent(fullPrompt);
-        const response = await result.response;
-        
-        // This usually returns a base64 or a URL depending on the specific implementation
-        // For Imagen 3 specifically, it might return image data in the response candidates.
-        const imageData = response.candidates[0]?.content?.parts[0]?.inlineData?.data;
-        
-        if (!imageData) {
-            throw new AppError("Failed to generate image data", 500);
+        const dims = ASPECT_DIMENSIONS[aspectRatio] || ASPECT_DIMENSIONS["1:1"];
+        const fullPrompt = `Style: ${style}. ${prompt}. High quality, detailed, professional.`;
+        const encodedPrompt = encodeURIComponent(fullPrompt);
+        const keyParam = process.env.POLLINATIONS_API_KEY ? `&key=${process.env.POLLINATIONS_API_KEY}` : "";
+
+        // Pollinations GET endpoint returns the image directly at this URL
+        const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${dims.width}&height=${dims.height}&model=flux&nologo=true&private=true${keyParam}`;
+
+        // Trigger generation with a HEAD request (Pollinations generates on first request)
+        const response = await axios.head(imageUrl, {
+            timeout: 120000,
+            maxRedirects: 5,
+            headers: pollinationsHeaders()
+        });
+        if (response.status !== 200) {
+            throw new AppError("Pollinations image generation returned non-200 status", 500);
         }
 
         return {
-            imageData: imageData,
+            imageData: imageUrl, // URL string — stored in DB and used as <img src>
             revisedPrompt: fullPrompt
         };
     } catch (error) {
-        console.error("Gemini Image Gen Error:", error);
+        console.error("Pollinations Image Gen Error:", error.message);
         throw new AppError(error.message || "Image generation failed", 500);
     }
 };
 
+// ── Video Generation via Pollinations.ai ────────────────────────────────────
+
 exports.generateVideo = async (prompt, aspectRatio = "16:9") => {
     try {
-        const model = genAI.getGenerativeModel({ model: process.env.GEMINI_VIDEO_MODEL || "veo-2.0-generate-001" });
-        
-        // Video is usually async
-        const result = await model.generateContent(prompt);
-        
-        // In actual Veo API, this returns an operation/job ID
-        const operationId = result.operationId || "mock-op-id-" + Date.now();
-        
-        return { operationId };
+        const encodedPrompt = encodeURIComponent(prompt);
+        const keyParam = process.env.POLLINATIONS_API_KEY ? `&key=${process.env.POLLINATIONS_API_KEY}` : "";
+        // Pollinations video endpoint — returns MP4 directly
+        const videoUrl = `https://video.pollinations.ai/prompt/${encodedPrompt}?model=wan&aspectRatio=${aspectRatio}&duration=5&private=true${keyParam}`;
+
+        // Trigger generation with a HEAD request
+        await axios.head(videoUrl, { timeout: 180000, maxRedirects: 5, headers: pollinationsHeaders() }).catch(() => {
+            // Video may take longer; the URL is still valid for later retrieval
+        });
+
+        return {
+            operationId: videoUrl, // Use the URL as the operation reference
+            videoUrl
+        };
     } catch (error) {
-        console.error("Gemini Video Gen Error:", error);
+        console.error("Pollinations Video Gen Error:", error.message);
         throw new AppError(error.message || "Video generation failed", 500);
     }
 };
 
 exports.pollVideoStatus = async (operationId) => {
     try {
-        // Mock polling logic - in real world you'd call the operation endpoint
-        // For demonstration, we simulate completion
-        return {
-            status: "completed",
-            videoUrl: "https://storage.googleapis.com/sample-videos/sample-mp4-file.mp4",
-            thumbnailUrl: "https://placehold.co/600x400?text=Video+Thumbnail"
-        };
+        // operationId is now the Pollinations video URL
+        const response = await axios.head(operationId, { timeout: 30000, maxRedirects: 5 }).catch(() => null);
+        if (response && response.status === 200) {
+            return {
+                status: "completed",
+                videoUrl: operationId,
+                thumbnailUrl: null
+            };
+        }
+        return { status: "processing", videoUrl: null, thumbnailUrl: null };
     } catch (error) {
         throw new AppError("Failed to check video status", 500);
     }
 };
 
+// ── Website Generation (still uses Gemini for HTML generation) ──────────────
+
 exports.generateWebsite = async (prompt, type = "landing-page") => {
     try {
-        const model = genAI.getGenerativeModel({ model: process.env.GEMINI_CHAT_MODEL || "gemini-2.0-flash" });
-        
+        const model = getGenAI().getGenerativeModel({ model: process.env.GEMINI_CHAT_MODEL || "gemini-2.0-flash" });
+
         const systemPrompt = `You are LovellyLilly AI's website builder. Generate a complete, beautiful, single-file HTML website with embedded CSS and JavaScript. Return ONLY valid HTML — no markdown, no explanation, no code fences. The website must be fully functional, responsive, and visually impressive. Website Type: ${type}`;
 
         const result = await model.generateContent([
             { text: systemPrompt },
             { text: prompt }
         ]);
-        
+
         const fullHtml = result.response.text().trim();
-        
+
         // Extract title
         const titleMatch = fullHtml.match(/<title>(.*?)<\/title>/i);
         const title = titleMatch ? titleMatch[1] : `Generated ${type}`;
 
-        return {
-            fullHtml,
-            title,
-            type
-        };
+        return { fullHtml, title, type };
     } catch (error) {
         console.error("Gemini Website Gen Error:", error);
         throw new AppError("Website generation failed", 500);
     }
 };
 
+// ── Document Chat (still uses Gemini for RAG-style Q&A) ─────────────────────
+
 exports.chatWithDocument = async (parsedText, chatHistory, userQuestion) => {
     try {
-        const model = genAI.getGenerativeModel({ model: process.env.GEMINI_VISION_MODEL || "gemini-2.0-flash" });
-        
+        const model = getGenAI().getGenerativeModel({ model: process.env.GEMINI_VISION_MODEL || "gemini-2.0-flash" });
+
         const systemPrompt = `You are LovellyLilly AI in document analysis mode. The user has uploaded a document. Answer questions about it accurately. Always reference specific parts of the document. Never fabricate document content. If the answer isn't in the document, say so clearly.
-        
+
         Document Content (Partial):
         ${parsedText.substring(0, 50000)}`;
 

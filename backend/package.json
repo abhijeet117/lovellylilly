@@ -20,6 +20,7 @@
     "@langchain/community": "^1.1.23",
     "@langchain/core": "^1.1.32",
     "@langchain/google-genai": "^2.1.26",
+    "@langchain/mistralai": "^1.0.7",
     "@langchain/openai": "^1.2.13",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",

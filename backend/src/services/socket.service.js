@@ -78,38 +78,47 @@ exports.init = (socketIoInstance) => {
                     socket.emit("sources", { sources });
                 }
 
-                // 3. Handle Generation Modes (Phase 2)
+                // 3. Handle Generation Modes (Phase 2) — wrapped with safe error handling
                 const generationModes = ["generate-image", "generate-video", "build-website"];
                 if (generationModes.includes(mode)) {
-                    let result;
-                    if (mode === "generate-image") {
-                        const style = data.style || "realistic";
-                        const aspectRatio = data.aspectRatio || "1:1";
-                        result = await geminiService.generateImage(content, aspectRatio, style);
-                        socket.emit("stream_done", {
-                            chatId,
-                            mode: "image",
-                            imageUrl: result.imageData,
-                            revisedPrompt: result.revisedPrompt
-                        });
-                    } else if (mode === "generate-video") {
-                        const aspectRatio = data.aspectRatio || "16:9";
-                        result = await geminiService.generateVideo(content, aspectRatio);
-                        socket.emit("stream_done", {
-                            chatId,
-                            mode: "video",
-                            operationId: result.operationId,
-                            status: "pending"
-                        });
-                    } else if (mode === "build-website") {
-                        const type = data.type || "landing-page";
-                        result = await geminiService.generateWebsite(content, type);
-                        socket.emit("stream_done", {
-                            chatId,
-                            mode: "website",
-                            fullHtml: result.fullHtml,
-                            title: result.title
-                        });
+                    try {
+                        let result;
+                        if (mode === "generate-image") {
+                            const style = data.style || "realistic";
+                            const aspectRatio = data.aspectRatio || "1:1";
+                            result = await geminiService.generateImage(content, aspectRatio, style);
+                            socket.emit("stream_done", {
+                                chatId,
+                                mode: "image",
+                                imageUrl: result.imageData,
+                                revisedPrompt: result.revisedPrompt
+                            });
+                        } else if (mode === "generate-video") {
+                            const aspectRatio = data.aspectRatio || "16:9";
+                            result = await geminiService.generateVideo(content, aspectRatio);
+                            socket.emit("stream_done", {
+                                chatId,
+                                mode: "video",
+                                operationId: result.operationId,
+                                status: "pending"
+                            });
+                        } else if (mode === "build-website") {
+                            const type = data.type || "landing-page";
+                            result = await geminiService.generateWebsite(content, type);
+                            socket.emit("stream_done", {
+                                chatId,
+                                mode: "website",
+                                fullHtml: result.fullHtml,
+                                title: result.title
+                            });
+                        }
+                    } catch (genErr) {
+                        const isRateLimit = genErr.message?.includes("429") || genErr.message?.includes("quota") || genErr.message?.includes("Too Many Requests");
+                        const userMsg = isRateLimit
+                            ? "The AI service is temporarily rate-limited. Please wait a moment and try again."
+                            : `Generation failed: ${genErr.message || "Unknown error"}. Please try again.`;
+                        console.error(`Generation error (${mode}):`, genErr.message);
+                        socket.emit("error", { message: userMsg });
                     }
                     return; // Stop processing further for generation modes
                 }
@@ -147,31 +156,46 @@ exports.init = (socketIoInstance) => {
                 let specialResult = null;
                 let cleanMessage = content;
 
-                // Slash command detection
+                // Slash command detection — agent calls wrapped in try-catch so failures don't crash chat
                 const slash = detectSlashCommand(content);
                 if (slash && !slash.isHelp) {
                     activeSkills = [{ key: slash.command, skill: slash.skill, score: 10 }];
                     cleanMessage = slash.cleanMessage || content;
 
                     if (slash.command === 'browse' || /https?:\/\//.test(cleanMessage)) {
-                        socket.emit('agent_status', { message: '🌐 Browsing the web...', active: true });
-                        specialResult = await runBrowserAgent(cleanMessage);
-                        socket.emit('agent_status', { active: false });
+                        try {
+                            socket.emit('agent_status', { message: '🌐 Browsing the web...', active: true });
+                            specialResult = await runBrowserAgent(cleanMessage);
+                        } catch (agentErr) {
+                            console.error("Browser agent failed:", agentErr.message);
+                        } finally {
+                            socket.emit('agent_status', { active: false });
+                        }
                     }
 
                     if (slash.command === 'seo') {
                         const urlMatch = cleanMessage.match(/https?:\/\/[^\s]+/)?.[0];
                         if (urlMatch) {
-                            socket.emit('agent_status', { message: '📈 Analyzing SEO...', active: true });
-                            specialResult = await runSeoAgent(urlMatch, socket.user._id);
-                            socket.emit('agent_status', { active: false });
+                            try {
+                                socket.emit('agent_status', { message: '📈 Analyzing SEO...', active: true });
+                                specialResult = await runSeoAgent(urlMatch, socket.user._id);
+                            } catch (agentErr) {
+                                console.error("SEO agent failed:", agentErr.message);
+                            } finally {
+                                socket.emit('agent_status', { active: false });
+                            }
                         }
                     }
 
                     if (slash.command === 'run') {
-                        socket.emit('agent_status', { message: '▶️ Running code...', active: true });
-                        specialResult = await runCodeAgent(cleanMessage);
-                        socket.emit('agent_status', { active: false });
+                        try {
+                            socket.emit('agent_status', { message: '▶️ Running code...', active: true });
+                            specialResult = await runCodeAgent(cleanMessage);
+                        } catch (agentErr) {
+                            console.error("Code agent failed:", agentErr.message);
+                        } finally {
+                            socket.emit('agent_status', { active: false });
+                        }
                     }
                 } else {
                     // Auto-detect skills from message content
@@ -179,11 +203,16 @@ exports.init = (socketIoInstance) => {
 
                     // Auto-browse any URLs found in the message
                     if (/https?:\/\//.test(content)) {
-                        socket.emit('agent_status', { message: '🌐 Browsing...', active: true });
-                        specialResult = await runBrowserAgent(content);
-                        socket.emit('agent_status', { active: false });
-                        if (!activeSkills.find(s => s.key === 'browse') && SKILL_REGISTRY['browse']) {
-                            activeSkills.unshift({ key: 'browse', skill: SKILL_REGISTRY['browse'], score: 5 });
+                        try {
+                            socket.emit('agent_status', { message: '🌐 Browsing...', active: true });
+                            specialResult = await runBrowserAgent(content);
+                            if (!activeSkills.find(s => s.key === 'browse') && SKILL_REGISTRY['browse']) {
+                                activeSkills.unshift({ key: 'browse', skill: SKILL_REGISTRY['browse'], score: 5 });
+                            }
+                        } catch (agentErr) {
+                            console.error("Auto-browse agent failed:", agentErr.message);
+                        } finally {
+                            socket.emit('agent_status', { active: false });
                         }
                     }
                 }
@@ -202,65 +231,92 @@ exports.init = (socketIoInstance) => {
                 }
                 // ── End Skill Router Block ─────────────────────────────────────────────
 
-                // 4. Stream AI response
+                // 4. Stream AI response — retry with fallback on 429/401 errors
                 socket.emit("message_status", { status: "generating" });
                 let fullResponse = "";
-                
-                const stream = aiService.streamResponse({
-                    query: cleanMessage,
-                    history,
-                    sources,
-                    skillSystemPrompt
-                });
 
-                for await (const chunk of stream) {
-                    fullResponse += chunk;
-                    socket.emit("stream_chunk", { content: chunk });
+                try {
+                    const stream = aiService.streamResponse({
+                        query: cleanMessage,
+                        history,
+                        sources,
+                        skillSystemPrompt
+                    });
+
+                    for await (const chunk of stream) {
+                        fullResponse += chunk;
+                        socket.emit("stream_chunk", { content: chunk });
+                    }
+                } catch (streamErr) {
+                    const isRateLimit = streamErr.message?.includes("429") || streamErr.message?.includes("quota") || streamErr.message?.includes("Too Many Requests");
+                    const isAuthErr = streamErr.message?.includes("401") || streamErr.message?.includes("API key") || streamErr.message?.includes("Unauthorized");
+                    if (isRateLimit || isAuthErr) {
+                        console.warn(`Primary AI provider failed (${isRateLimit ? "rate limit" : "auth error"}), sending safe message`);
+                        fullResponse = isRateLimit
+                            ? "I'm currently experiencing high demand. Please try again in a moment."
+                            : "The AI service is temporarily unavailable. Please try again shortly.";
+                        socket.emit("stream_chunk", { content: fullResponse });
+                    } else {
+                        throw streamErr; // Re-throw unexpected errors to outer catch
+                    }
                 }
 
-                // 5. Generate follow-ups
-                const followUpSuggestions = await aiService.generateFollowUps(content, fullResponse);
+                // 5. Generate follow-ups (safe — already wrapped internally, but guard here too)
+                let followUpSuggestions = [];
+                try {
+                    followUpSuggestions = await aiService.generateFollowUps(content, fullResponse);
+                } catch (fuErr) {
+                    console.error("Follow-up generation failed:", fuErr.message);
+                    followUpSuggestions = ["Tell me more", "Give me an example", "Summarize this"];
+                }
 
-                // 6. Save message and update chat
+                // 6. Save message and update chat — DB errors should not crash the response
                 const responseTimeMs = Date.now() - startTime;
-                
-                // Save user message
-                await Message.create({
-                    chat: currentChatId,
-                    user: socket.user._id,
-                    role: "user",
-                    content,
-                    queryMode: mode,
-                    hasWebSearch: sources.length > 0
-                });
+                let assistantMessageId = null;
 
-                // Save assistant message
-                const assistantMessage = await Message.create({
-                    chat: currentChatId,
-                    user: socket.user._id, // Still linked to the user for indexing
-                    role: "assistant",
-                    content: fullResponse,
-                    sources,
-                    hasWebSearch: sources.length > 0,
-                    queryMode: mode,
-                    followUpSuggestions,
-                    responseTimeMs,
-                    model: chat.model
-                });
+                try {
+                    // Save user message
+                    await Message.create({
+                        chat: currentChatId,
+                        user: socket.user._id,
+                        role: "user",
+                        content,
+                        queryMode: mode,
+                        hasWebSearch: sources.length > 0
+                    });
 
-                // Update chat metadata
-                chat.lastMessageAt = Date.now();
-                chat.messageCount += 2;
-                chat.queryMode = mode;
-                await chat.save();
+                    // Save assistant message
+                    const assistantMessage = await Message.create({
+                        chat: currentChatId,
+                        user: socket.user._id,
+                        role: "assistant",
+                        content: fullResponse,
+                        sources,
+                        hasWebSearch: sources.length > 0,
+                        queryMode: mode,
+                        followUpSuggestions,
+                        responseTimeMs,
+                        model: chat.model
+                    });
+                    assistantMessageId = assistantMessage._id;
 
-                // Update user total queries
-                await User.findByIdAndUpdate(socket.user._id, {
-                    $inc: { totalQueries: 1 },
-                    lastActiveAt: Date.now()
-                });
+                    // Update chat metadata
+                    chat.lastMessageAt = Date.now();
+                    chat.messageCount += 2;
+                    chat.queryMode = mode;
+                    await chat.save();
 
-                // 7. Log query (async)
+                    // Update user total queries
+                    await User.findByIdAndUpdate(socket.user._id, {
+                        $inc: { totalQueries: 1 },
+                        lastActiveAt: Date.now()
+                    });
+                } catch (dbErr) {
+                    // DB save failure should not prevent the user from seeing the AI response
+                    console.error("Database save error (response already sent to client):", dbErr.message);
+                }
+
+                // 7. Log query (async, fire-and-forget)
                 QueryLog.create({
                     user: socket.user._id,
                     chat: currentChatId,
@@ -275,15 +331,26 @@ exports.init = (socketIoInstance) => {
                 // 8. Final event
                 socket.emit("stream_done", {
                     chatId: currentChatId,
-                    messageId: assistantMessage._id,
+                    messageId: assistantMessageId,
                     sources,
                     followUpSuggestions
                 });
 
             } catch (error) {
                 console.error("Socket Error:", error);
-                socket.emit("error", { message: error.message || "Something went wrong" });
-                
+
+                // Provide user-friendly messages for common API errors
+                let userMessage = error.message || "Something went wrong";
+                if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("Too Many Requests")) {
+                    userMessage = "The AI service is temporarily rate-limited. Please wait a moment and try again.";
+                } else if (error.message?.includes("401") || error.message?.includes("API key") || error.message?.includes("Unauthorized")) {
+                    userMessage = "AI service authentication error. Please contact the administrator.";
+                } else if (error.message?.includes("ECONNREFUSED") || error.message?.includes("ETIMEDOUT")) {
+                    userMessage = "Could not reach the AI service. Please try again shortly.";
+                }
+
+                socket.emit("error", { message: userMessage });
+
                 // Log failure
                 QueryLog.create({
                     user: socket.user._id,

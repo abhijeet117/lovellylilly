@@ -1,17 +1,24 @@
 const { ChatOpenAI } = require("@langchain/openai");
 const { ChatAnthropic } = require("@langchain/anthropic");
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
+const { ChatMistralAI } = require("@langchain/mistralai");
 const { ChatPromptTemplate, MessagesPlaceholder } = require("@langchain/core/prompts");
 const { HumanMessage, AIMessage, SystemMessage } = require("@langchain/core/messages");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
 const { buildSystemPrompt } = require("../utils/buildSystemPrompt");
 
-// Initialize model based on provider
-const getModel = (isStreaming = false) => {
-    const provider = process.env.DEFAULT_AI_PROVIDER || (process.env.GEMINI_API_KEY ? "gemini" : "openai");
-    const modelName = process.env.DEFAULT_AI_MODEL || "gemini-2.0-flash";
+// Build a model instance for a specific provider
+const buildModel = (provider, modelName, isStreaming = false) => {
+    if (provider === "mistral" && process.env.MISTRAL_API_KEY) {
+        return new ChatMistralAI({
+            model: modelName,
+            apiKey: process.env.MISTRAL_API_KEY,
+            streaming: isStreaming,
+            maxRetries: 2
+        });
+    }
 
-    if (provider === "anthropic") {
+    if (provider === "anthropic" && process.env.ANTHROPIC_API_KEY) {
         return new ChatAnthropic({
             modelName: modelName,
             anthropicApiKey: process.env.ANTHROPIC_API_KEY,
@@ -19,7 +26,7 @@ const getModel = (isStreaming = false) => {
         });
     }
 
-    if (provider === "gemini") {
+    if (provider === "gemini" && process.env.GEMINI_API_KEY) {
         return new ChatGoogleGenerativeAI({
             model: modelName,
             apiKey: process.env.GEMINI_API_KEY,
@@ -27,7 +34,7 @@ const getModel = (isStreaming = false) => {
         });
     }
 
-    if (provider === "minimax") {
+    if (provider === "minimax" && process.env.MINIMAX_API_KEY) {
         return new ChatOpenAI({
             modelName: modelName || "MiniMax-M2.1",
             openAIApiKey: process.env.MINIMAX_API_KEY,
@@ -38,37 +45,42 @@ const getModel = (isStreaming = false) => {
         });
     }
 
-    return new ChatOpenAI({
-        modelName: modelName,
-        openAIApiKey: process.env.OPENAI_API_KEY,
-        streaming: isStreaming
-    });
+    if (provider === "openai" && process.env.OPENAI_API_KEY) {
+        return new ChatOpenAI({
+            modelName: modelName,
+            openAIApiKey: process.env.OPENAI_API_KEY,
+            streaming: isStreaming
+        });
+    }
+
+    return null;
+};
+
+// Determine fallback order: primary provider first, then others with valid keys
+const getFallbackOrder = () => {
+    const primary = process.env.DEFAULT_AI_PROVIDER || (process.env.MISTRAL_API_KEY ? "mistral" : process.env.GEMINI_API_KEY ? "gemini" : "openai");
+    const all = ["mistral", "gemini", "openai", "anthropic", "minimax"];
+    return [primary, ...all.filter(p => p !== primary)];
+};
+
+// Initialize model based on provider (returns first provider with a valid key)
+const getModel = (isStreaming = false) => {
+    const modelName = process.env.DEFAULT_AI_MODEL || "gemini-2.0-flash";
+    for (const provider of getFallbackOrder()) {
+        const model = buildModel(provider, modelName, isStreaming);
+        if (model) return model;
+    }
+    throw new Error("No AI provider configured. Set at least one API key (GEMINI_API_KEY, OPENAI_API_KEY, etc.).");
 };
 
 const getFastModel = () => {
-    const provider = process.env.DEFAULT_AI_PROVIDER || (process.env.GEMINI_API_KEY ? "gemini" : "openai");
-    
-    if (provider === "gemini") {
-        return new ChatGoogleGenerativeAI({
-            model: "gemini-2.0-flash",
-            apiKey: process.env.GEMINI_API_KEY
-        });
+    // Fast model uses lightweight variants; fallback through providers
+    const fastModels = { mistral: "mistral-small-latest", gemini: "gemini-2.0-flash", openai: "gpt-4o-mini", anthropic: "claude-haiku-4-5-20251001", minimax: "MiniMax-M2.1" };
+    for (const provider of getFallbackOrder()) {
+        const model = buildModel(provider, fastModels[provider] || "gemini-2.0-flash", false);
+        if (model) return model;
     }
-    
-    if (provider === "minimax") {
-        return new ChatOpenAI({
-            modelName: "MiniMax-M2.1",
-            openAIApiKey: process.env.MINIMAX_API_KEY,
-            configuration: {
-                baseURL: "https://minimax-m2.com/api/v1",
-            }
-        });
-    }
-
-    return new ChatOpenAI({
-        modelName: "gpt-4o-mini",
-        openAIApiKey: process.env.OPENAI_API_KEY
-    });
+    throw new Error("No AI provider configured for fast model.");
 };
 
 exports.streamResponse = async function* ({ query, history = [], sources = [], skillSystemPrompt = null }) {
@@ -138,14 +150,14 @@ exports.generateAutoTitle = async (firstMessage) => {
 };
 
 exports.generateFollowUps = async (query, response) => {
-    const model = getFastModel();
-    const systemPrompt = `You are LovellyLilly AI. Based on this question and answer, suggest 3 short, curious, and specific follow-up questions the user might naturally want to ask next. Return ONLY a valid JSON array of exactly 3 strings. No explanation, no markdown, no code fences. Example: ["What are the side effects?", "How long does it take?", "Is there a cheaper alternative?"]`;
-    
-    const res = await model.invoke([
-        new SystemMessage(systemPrompt),
-        new HumanMessage(`Question: ${query}\nAnswer: ${response}`)
-    ]);
     try {
+        const model = getFastModel();
+        const systemPrompt = `You are LovellyLilly AI. Based on this question and answer, suggest 3 short, curious, and specific follow-up questions the user might naturally want to ask next. Return ONLY a valid JSON array of exactly 3 strings. No explanation, no markdown, no code fences. Example: ["What are the side effects?", "How long does it take?", "Is there a cheaper alternative?"]`;
+
+        const res = await model.invoke([
+            new SystemMessage(systemPrompt),
+            new HumanMessage(`Question: ${query}\nAnswer: ${response}`)
+        ]);
         // Find JSON array in response if model adds fluff
         const jsonMatch = res.content.match(/\[.*\]/s);
         if (jsonMatch) {
@@ -153,7 +165,7 @@ exports.generateFollowUps = async (query, response) => {
         }
         return JSON.parse(res.content);
     } catch (e) {
-        console.error("Error parsing follow-ups:", e);
+        console.error("Error generating follow-ups:", e.message);
         return ["How does this work?", "Give me an example", "Summarize this"];
     }
 };

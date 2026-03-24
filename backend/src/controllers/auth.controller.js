@@ -91,8 +91,9 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 exports.logout = (req, res) => {
+    // Expire cookie immediately (epoch = Jan 1 1970) to prevent lingering sessions
     res.cookie("token", "none", {
-        expires: new Date(Date.now() + 10 * 1000),
+        expires: new Date(0),
         httpOnly: true
     });
 
@@ -101,6 +102,9 @@ exports.logout = (req, res) => {
 
 exports.getMe = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.user.id);
+    if (!user) {
+        return next(new AppError("User no longer exists. Please log in again.", 401));
+    }
     res.status(200).json({ status: "success", data: { user } });
 });
 
