@@ -1,2 +1,5 @@
 .env
 node_modules
+
+# Logs directory (written by Winston in production)
+logs/

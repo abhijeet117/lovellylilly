@@ -20,8 +20,8 @@ export default function Modal({ isOpen, onClose, title, children }) {
           animate={animation.backdrop.visible}
           exit={animation.backdrop.exit}
           style={{
-            position: 'fixed', inset: 0, zIndex: 200,
-            background: 'rgba(7,9,15,0.85)',
+            position: 'fixed', inset: 0, zIndex: 'var(--z-modal, 800)',
+            background: 'color-mix(in srgb, var(--clr-bg) 85%, transparent)',
             backdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center',
             justifyContent: 'center', padding: '24px',
@@ -34,14 +34,14 @@ export default function Modal({ isOpen, onClose, title, children }) {
             animate={animation.dialog.visible}
             exit={animation.dialog.exit}
             style={{
-              background: '#131824', border: '1px solid #222840',
+              background: 'var(--clr-card)', border: '1px solid var(--clr-border)',
               borderRadius: '16px', padding: '32px',
               width: '100%', maxWidth: '480px',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.7)',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
             }}
           >
             {title && (
-              <h3 style={{ color: '#EDF0FF', fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>
+              <h3 style={{ color: 'var(--clr-text)', fontFamily: 'var(--f-groote)', fontSize: '18px', fontWeight: 700, marginBottom: '16px' }}>
                 {title}
               </h3>
             )}

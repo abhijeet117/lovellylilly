@@ -1,7 +1,7 @@
 ﻿import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeSwitcher from '../ui/ThemeSwitcher';
-import { MessageSquarePlus, Image, Video, Globe, FileText, Settings } from 'lucide-react';
+import { MessageSquarePlus, Image, Video, Globe, FileText, Settings, BarChart3 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, isMobile = false }) {
   const navigate = useNavigate();
@@ -12,6 +12,7 @@ export default function Sidebar({ isOpen, isMobile = false }) {
     { label: 'Video Studio', path: '/studio/video', icon: Video },
     { label: 'Website Builder', path: '/studio/website', icon: Globe },
     { label: 'Documents', path: '/documents', icon: FileText },
+    { label: 'SEO Analyzer', path: '/seo', icon: BarChart3 },
     { label: 'Settings', path: '/settings', icon: Settings },
   ];
 

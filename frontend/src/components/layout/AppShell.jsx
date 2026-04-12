@@ -20,9 +20,9 @@ export default function AppShell({ children, showSidebar = true }) {
   }, []);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: 'var(--clr-bg)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', background: 'var(--clr-bg)' }}>
       <Navbar onToggleSidebar={() => setSidebarOpen(p => !p)} showSidebar={showSidebar} />
-      <div style={{ display: 'flex', flex: 1, paddingTop: '72px' }}>
+      <div style={{ display: 'flex', flex: 1, paddingTop: '72px', minHeight: 0 }}>
         {showSidebar && <Sidebar isOpen={sidebarOpen} isMobile={isMobile} />}
         {showSidebar && isMobile && sidebarOpen && (
           <div
@@ -35,7 +35,7 @@ export default function AppShell({ children, showSidebar = true }) {
             }}
           />
         )}
-        <main style={{ flex: 1, overflow: 'auto' }}>
+        <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', minHeight: 0 }}>
           {children}
         </main>
       </div>

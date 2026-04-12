@@ -1,10 +1,15 @@
 const { body, param } = require("express-validator");
 
 exports.renameChat = [
-    param("chatId").isMongoId().withMessage("Invalid chat ID"),
-    body("title").trim().notEmpty().withMessage("Title is required")
+    param("chatId")
+        .isMongoId().withMessage("Invalid chat ID"),
+    body("title")
+        .trim()
+        .notEmpty().withMessage("Title is required")
+        .isLength({ max: 120 }).withMessage("Title cannot exceed 120 characters")
 ];
 
 exports.chatIdOnly = [
-    param("chatId").isMongoId().withMessage("Invalid chat ID")
+    param("chatId")
+        .isMongoId().withMessage("Invalid chat ID")
 ];

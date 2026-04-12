@@ -2,7 +2,22 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const axios = require("axios");
 const AppError = require("../utils/AppError");
 
-// Lazy-init Gemini SDK: avoid crash at module load if GEMINI_API_KEY is not yet set
+// LangChain providers — used for website/doc generation with multi-provider fallback
+const { ChatMistralAI } = require("@langchain/mistralai");
+const { ChatOpenAI } = require("@langchain/openai");
+const { ChatAnthropic } = require("@langchain/anthropic");
+const { HumanMessage, SystemMessage } = require("@langchain/core/messages");
+const { StringOutputParser } = require("@langchain/core/output_parsers");
+
+let ChatGoogleGenerativeAI = null;
+
+try {
+    ({ ChatGoogleGenerativeAI } = require("@langchain/google-genai"));
+} catch (error) {
+    console.warn("[gemini.service] Gemini adapter unavailable:", error.message);
+}
+
+// Lazy-init Gemini SDK (only needed for chatWithDocument's multi-turn chat)
 let _genAI = null;
 const getGenAI = () => {
     if (!_genAI) {
@@ -12,6 +27,42 @@ const getGenAI = () => {
         _genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     }
     return _genAI;
+};
+
+// ── Multi-provider fallback for text generation ──────────────────────────────
+// Tries providers in order until one succeeds. Quota / auth errors advance to next.
+const PROVIDER_CHAIN = [
+    () => process.env.GEMINI_API_KEY && ChatGoogleGenerativeAI && new ChatGoogleGenerativeAI({ model: "gemini-2.0-flash",      apiKey: process.env.GEMINI_API_KEY }),
+    () => process.env.MISTRAL_API_KEY && new ChatMistralAI({ model: "mistral-large-latest",           apiKey: process.env.MISTRAL_API_KEY }),
+    () => process.env.OPENAI_API_KEY  && new ChatOpenAI({ modelName: "gpt-4o-mini",                   openAIApiKey: process.env.OPENAI_API_KEY }),
+    () => process.env.ANTHROPIC_API_KEY && new ChatAnthropic({ modelName: "claude-haiku-4-5-20251001", anthropicApiKey: process.env.ANTHROPIC_API_KEY }),
+];
+
+const isQuotaOrAuthError = (err) =>
+    /429|quota|rate.?limit|too many|resource.?exhausted/i.test(err.message) ||
+    /401|403|unauthorized|invalid.*key|api.?key/i.test(err.message);
+
+const generateWithFallback = async (systemPrompt, userPrompt) => {
+    let lastErr;
+    for (const factory of PROVIDER_CHAIN) {
+        const model = factory();
+        if (!model) continue;
+        try {
+            const result = await model.pipe(new StringOutputParser()).invoke([
+                new SystemMessage(systemPrompt),
+                new HumanMessage(userPrompt),
+            ]);
+            return result;
+        } catch (err) {
+            lastErr = err;
+            if (isQuotaOrAuthError(err)) {
+                console.warn(`[gemini.service] Provider failed (${err.message?.slice(0, 80)}), trying next…`);
+                continue;
+            }
+            throw err; // unexpected error — surface immediately
+        }
+    }
+    throw lastErr || new Error("All AI providers failed or are unconfigured.");
 };
 
 // ── Image Generation via Pollinations.ai ────────────────────────────────────
@@ -100,59 +151,78 @@ exports.pollVideoStatus = async (operationId) => {
     }
 };
 
-// ── Website Generation (still uses Gemini for HTML generation) ──────────────
+// ── Website Generation (uses Gemini for HTML generation) ────────────────────
+
+const stripCodeFences = (text) => {
+    // Remove ```html ... ``` or ``` ... ``` wrappers Gemini sometimes adds
+    return text
+        .replace(/^```(?:html)?\s*/i, "")
+        .replace(/\s*```\s*$/i, "")
+        .trim();
+};
 
 exports.generateWebsite = async (prompt, type = "landing-page") => {
+    const systemPrompt = `You are LovellyLilly AI's website builder.
+Generate a complete, beautiful, single-file HTML website with embedded CSS and JavaScript.
+Rules:
+- Return ONLY the raw HTML document starting with <!DOCTYPE html>
+- No markdown, no explanations, no code fences (no triple backticks)
+- Must include: responsive design, attractive styling, real content (no lorem ipsum)
+- Use a modern dark or light theme appropriate for the website type
+- Include smooth animations or hover effects where suitable
+- Website type: ${type}`;
+
     try {
-        const model = getGenAI().getGenerativeModel({ model: process.env.GEMINI_CHAT_MODEL || "gemini-2.0-flash" });
+        let fullHtml = stripCodeFences(await generateWithFallback(systemPrompt, prompt));
 
-        const systemPrompt = `You are LovellyLilly AI's website builder. Generate a complete, beautiful, single-file HTML website with embedded CSS and JavaScript. Return ONLY valid HTML — no markdown, no explanation, no code fences. The website must be fully functional, responsive, and visually impressive. Website Type: ${type}`;
+        if (!fullHtml.toLowerCase().includes("<html")) {
+            throw new Error("AI returned non-HTML content — retrying may help");
+        }
 
-        const result = await model.generateContent([
-            { text: systemPrompt },
-            { text: prompt }
-        ]);
-
-        const fullHtml = result.response.text().trim();
-
-        // Extract title
-        const titleMatch = fullHtml.match(/<title>(.*?)<\/title>/i);
-        const title = titleMatch ? titleMatch[1] : `Generated ${type}`;
+        const titleMatch = fullHtml.match(/<title[^>]*>(.*?)<\/title>/i);
+        const title = titleMatch ? titleMatch[1].trim() : `${type.replace(/-/g, " ")} website`;
 
         return { fullHtml, title, type };
     } catch (error) {
-        console.error("Gemini Website Gen Error:", error);
-        throw new AppError("Website generation failed", 500);
+        console.error("Website Gen Error:", error.message || error);
+        throw new AppError(
+            isQuotaOrAuthError(error)
+                ? "All AI providers are currently rate-limited. Please try again in a minute."
+                : `Website generation failed: ${error.message || "unknown error"}`,
+            500
+        );
     }
 };
 
 // ── Document Chat (still uses Gemini for RAG-style Q&A) ─────────────────────
 
-exports.chatWithDocument = async (parsedText, chatHistory, userQuestion) => {
+exports.chatWithDocument = async (parsedText, chatHistory, userQuestion, _systemPromptOverride) => {
+    const systemPrompt = `You are LovellyLilly AI in document analysis mode.
+Answer the user's question based solely on the document content below.
+Always reference specific parts of the document. Never fabricate content.
+If the answer is not in the document, say so clearly.
+
+Document Content:
+${parsedText.substring(0, 48000)}`;
+
+    // Build a simple history suffix so the model sees prior turns
+    const historyText = chatHistory.length > 0
+        ? chatHistory.map(m => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n")
+        : "";
+
+    const userPrompt = historyText
+        ? `Previous conversation:\n${historyText}\n\nUser question: ${userQuestion}`
+        : userQuestion;
+
     try {
-        const model = getGenAI().getGenerativeModel({ model: process.env.GEMINI_VISION_MODEL || "gemini-2.0-flash" });
-
-        const systemPrompt = `You are LovellyLilly AI in document analysis mode. The user has uploaded a document. Answer questions about it accurately. Always reference specific parts of the document. Never fabricate document content. If the answer isn't in the document, say so clearly.
-
-        Document Content (Partial):
-        ${parsedText.substring(0, 50000)}`;
-
-        const history = chatHistory.map(m => ({
-            role: m.role === "user" ? "user" : "model",
-            parts: [{ text: m.content }]
-        }));
-
-        const chat = model.startChat({
-            history: history,
-            generationConfig: {
-                maxOutputTokens: 2048,
-            },
-        });
-
-        const result = await chat.sendMessage(userQuestion);
-        return result.response.text();
+        return await generateWithFallback(systemPrompt, userPrompt);
     } catch (error) {
-        console.error("Gemini Doc Chat Error:", error);
-        throw new AppError("Failed to chat with document", 500);
+        console.error("Doc Chat Error:", error.message);
+        throw new AppError(
+            isQuotaOrAuthError(error)
+                ? "AI service is rate-limited. Please try again in a moment."
+                : "Failed to chat with document",
+            500
+        );
     }
 };

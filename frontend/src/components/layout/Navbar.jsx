@@ -14,12 +14,28 @@ const NAV_LINKS = [
   { label: 'Contact', href: '#cta', section: 'cta' },
 ];
 
+// Links shown on marketing sub-pages (product, features, pricing, changelog, api-docs)
+const MARKETING_LINKS = [
+  { label: 'Product', path: '/product' },
+  { label: 'Features', path: '/features' },
+  { label: 'Pricing', path: '/pricing' },
+  { label: 'Changelog', path: '/changelog' },
+  { label: 'API Docs', path: '/api-docs' },
+  { label: 'About', path: '/about' },
+  { label: 'Blog', path: '/blog' },
+  { label: 'Careers', path: '/careers' },
+  { label: 'Press', path: '/press' },
+];
+
+const MARKETING_PATHS = MARKETING_LINKS.map((l) => l.path);
+
 const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const animation = useAnimationConfig();
   const isLanding = location.pathname === '/';
+  const isMarketing = MARKETING_PATHS.includes(location.pathname);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -128,6 +144,32 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
           </ul>
         )}
 
+        {isMarketing && (
+          <ul className="nav-links" id="nav-links-marketing">
+            {MARKETING_LINKS.map((link) => (
+              <li key={link.label} className="motion-nav-shell">
+                <motion.a
+                  href={link.path}
+                  className={`motion-nav-link ${location.pathname === link.path ? 'active' : ''}`}
+                  onClick={(e) => { e.preventDefault(); navigate(link.path); setMobileOpen(false); }}
+                  whileHover={animation.reducedMotion ? undefined : { y: -1, opacity: 0.6 }}
+                  whileTap={animation.reducedMotion ? undefined : { scale: 0.96 }}
+                  transition={animation.reducedMotion ? { duration: 0 } : { duration: 0.15 }}
+                >
+                  {link.label}
+                  {location.pathname === link.path && (
+                    <motion.span
+                      layoutId="nav-line-marketing"
+                      className="motion-nav-underline"
+                      transition={{ ...animation.transitions.snappy, restDelta: 0.001 }}
+                    />
+                  )}
+                </motion.a>
+              </li>
+            ))}
+          </ul>
+        )}
+
         <div className="nav-r">
           {isLanding && (
             <div aria-hidden="true" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -184,21 +226,44 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
           )}
 
           {user && !isLanding && (
-            <div className="nav-cta-btns" style={{ display: 'flex', gap: '10px' }}>
+            <div className="nav-cta-btns" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
               <a
-                className="btn-ghost-sm"
                 href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate('/settings');
+                onClick={(e) => { e.preventDefault(); navigate('/settings'); }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  textDecoration: 'none', color: 'var(--clr-text)',
+                  padding: '4px 8px', borderRadius: '24px',
+                  border: '1px solid var(--clr-border)',
+                  background: 'var(--clr-surface)',
+                  transition: 'border-color 0.15s ease',
                 }}
               >
-                Settings
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    style={{ width: '26px', height: '26px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '26px', height: '26px', borderRadius: '50%',
+                    background: 'var(--clr-accent)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '10px', fontWeight: 700, color: 'var(--clr-bg)',
+                    fontFamily: 'var(--f-doll)',
+                  }}>
+                    {(user.name || user.email || 'U').slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <span style={{ fontSize: '13px', fontFamily: 'var(--f-lunchtype)', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {user.name || user.email?.split('@')[0] || 'Account'}
+                </span>
               </a>
             </div>
           )}
 
-          {isLanding && (
+          {(isLanding || isMarketing) && (
             <button
               className="ham"
               id="ham"
@@ -245,7 +310,7 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
         </div>
       </nav>
 
-      {isLanding && (
+      {(isLanding || isMarketing) && (
         <AnimatePresence mode="wait">
           {mobileOpen && (
             <>
@@ -258,12 +323,12 @@ const Navbar = ({ onToggleSidebar, showSidebar = false }) => {
                 exit="exit"
                 variants={animation.mobileMenu}
               >
-                {NAV_LINKS.map((link, index) => (
+                {(isLanding ? NAV_LINKS.map((l) => ({ label: l.label, href: l.href })) : MARKETING_LINKS.map((l) => ({ label: l.label, href: l.path, isPage: true }))).map((link, index) => (
                   <motion.a
-                    key={link.section}
+                    key={link.label}
                     className="mob-lnk motion-mobile-link"
                     href={link.href}
-                    onClick={closeMobile}
+                    onClick={(e) => { if (link.isPage) { e.preventDefault(); navigate(link.href); } closeMobile(); }}
                     custom={index}
                     initial="hidden"
                     animate="visible"

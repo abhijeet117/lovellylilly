@@ -21,7 +21,7 @@ const generatedWebsiteSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ["landing-page", "portfolio", "dashboard", "blog", "other"],
+        enum: ["landing-page", "portfolio", "saas", "blog", "e-commerce", "dashboard", "other"],
         default: "landing-page"
     },
     isSaved: {

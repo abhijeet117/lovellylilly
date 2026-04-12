@@ -197,19 +197,20 @@ const FOOTER_COLUMNS = [
   {
     title: 'Product',
     links: [
-      { label: 'Features', href: '#features' },
-      { label: 'Pricing', href: '#pricing' },
-      { label: 'Changelog', href: '#' },
-      { label: 'API Docs', href: '#' },
+      { label: 'Product', href: '/product' },
+      { label: 'Features', href: '/features' },
+      { label: 'Pricing', href: '/pricing' },
+      { label: 'Changelog', href: '/changelog' },
+      { label: 'API Docs', href: '/api-docs' },
     ],
   },
   {
     title: 'Company',
     links: [
-      { label: 'About', href: '#about' },
-      { label: 'Blog', href: '#' },
-      { label: 'Careers', href: '#' },
-      { label: 'Press', href: '#' },
+      { label: 'About', href: '/about' },
+      { label: 'Blog', href: '/blog' },
+      { label: 'Careers', href: '/careers' },
+      { label: 'Press', href: '/press' },
     ],
   },
   {

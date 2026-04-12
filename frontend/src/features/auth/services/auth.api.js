@@ -40,6 +40,11 @@ export const verifyEmail = async (token) => {
   return data;
 };
 
+export const resendVerification = async (email) => {
+  const { data } = await api.post('/auth/resend-verification', { email });
+  return data;
+};
+
 export const forgotPassword = async (email) => {
   const { data } = await api.post('/auth/forgot-password', { email });
   return data;
@@ -48,6 +53,16 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (token, password) => {
   const { data } = await api.post(`/auth/reset-password/${token}`, { password });
   return data;
+};
+
+/**
+ * Exchange a Firebase ID token (from Google/GitHub sign-in) for our
+ * own session cookie. The backend verifies the token via Firebase Admin SDK,
+ * then finds-or-creates the user in MongoDB.
+ */
+export const firebaseLogin = async (idToken) => {
+  const { data } = await api.post('/auth/firebase', { idToken });
+  return normalizeAuthPayload(data);
 };
 
 export default api;

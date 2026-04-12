@@ -1,11 +1,17 @@
 const { ChatOpenAI } = require("@langchain/openai");
 const { ChatAnthropic } = require("@langchain/anthropic");
-const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const { ChatMistralAI } = require("@langchain/mistralai");
-const { ChatPromptTemplate, MessagesPlaceholder } = require("@langchain/core/prompts");
 const { HumanMessage, AIMessage, SystemMessage } = require("@langchain/core/messages");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
 const { buildSystemPrompt } = require("../utils/buildSystemPrompt");
+
+let ChatGoogleGenerativeAI = null;
+
+try {
+    ({ ChatGoogleGenerativeAI } = require("@langchain/google-genai"));
+} catch (error) {
+    console.warn("[ai.service] Gemini adapter unavailable:", error.message);
+}
 
 // Build a model instance for a specific provider
 const buildModel = (provider, modelName, isStreaming = false) => {
@@ -26,7 +32,7 @@ const buildModel = (provider, modelName, isStreaming = false) => {
         });
     }
 
-    if (provider === "gemini" && process.env.GEMINI_API_KEY) {
+    if (provider === "gemini" && process.env.GEMINI_API_KEY && ChatGoogleGenerativeAI) {
         return new ChatGoogleGenerativeAI({
             model: modelName,
             apiKey: process.env.GEMINI_API_KEY,
@@ -100,18 +106,17 @@ exports.streamResponse = async function* ({ query, history = [], sources = [], s
             ? `${systemPromptBase}\n\nWeb Search Results:\n${sources.map((s, i) => `[${i + 1}] ${s.title}: ${s.snippet}`).join("\n\n")}`
             : buildSystemPrompt({ queryMode: "think", isVoiceMessage: false }));
 
-    const prompt = ChatPromptTemplate.fromMessages([
-        ["system", systemInstruction],
-        new MessagesPlaceholder("history"),
-        ["human", "{query}"]
-    ]);
+    // Build messages directly to avoid INVALID_PROMPT_INPUT errors from
+    // literal {} in system prompts, web search snippets, or agent context
+    const messages = [
+        new SystemMessage(systemInstruction),
+        ...history.map(m => m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content)),
+        new HumanMessage(query)
+    ];
 
-    const chain = prompt.pipe(model).pipe(new StringOutputParser());
+    const chain = model.pipe(new StringOutputParser());
 
-    const stream = await chain.stream({
-        query: query,
-        history: history.map(m => m.role === "user" ? new HumanMessage(m.content) : new AIMessage(m.content))
-    });
+    const stream = await chain.stream(messages);
 
     for await (const chunk of stream) {
         yield chunk;

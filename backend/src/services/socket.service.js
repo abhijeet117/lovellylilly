@@ -3,6 +3,7 @@ const User = require("../models/User.model");
 const Chat = require("../models/Chat.model");
 const Message = require("../models/Message.model");
 const QueryLog = require("../models/QueryLog.model");
+const Document = require("../models/Document.model");
 const aiService = require("./ai.service");
 const geminiService = require("./gemini.service");
 const searchService = require("./search.service");
@@ -50,7 +51,7 @@ exports.init = (socketIoInstance) => {
         });
 
         socket.on("send_message", async (data) => {
-            const { content, chatId, useWebSearch } = data;
+            const { content, chatId, useWebSearch, documentId } = data;
             const startTime = Date.now();
 
             try {
@@ -76,6 +77,19 @@ exports.init = (socketIoInstance) => {
                     socket.emit("message_status", { status: "searching_web" });
                     sources = await searchService.search(content);
                     socket.emit("sources", { sources });
+                }
+
+                // 2b. Inject document context if a document was attached
+                let documentContext = null;
+                if (documentId) {
+                    try {
+                        const doc = await Document.findOne({ _id: documentId, user: socket.user._id }).select("+parsedText");
+                        if (doc && doc.status === "ready" && doc.parsedText) {
+                            documentContext = `## Attached Document: "${doc.originalName}"\n\n${doc.parsedText.substring(0, 40000)}`;
+                        }
+                    } catch (docErr) {
+                        console.error("Document fetch error:", docErr.message);
+                    }
                 }
 
                 // 3. Handle Generation Modes (Phase 2) — wrapped with safe error handling
@@ -221,6 +235,9 @@ exports.init = (socketIoInstance) => {
                 skillSystemPrompt = buildSkillSystemPrompt(activeSkills);
                 if (specialResult?.context) {
                     skillSystemPrompt += `\n\n## Live Data Retrieved:\n${specialResult.context}`;
+                }
+                if (documentContext) {
+                    skillSystemPrompt += `\n\n${documentContext}`;
                 }
 
                 // Tell frontend which skills are active

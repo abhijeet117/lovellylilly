@@ -6,8 +6,10 @@
   "scripts": {
     "start": "node server.js",
     "start:pinchtab": "pinchtab server",
-    "dev": "concurrently \"npm run start:pinchtab\" \"nodemon server.js\"",
-    "dev:nopin": "nodemon server.js",
+    "dev:preflight": "node scripts/preflight-port.js",
+    "dev:backend": "npm run dev:preflight && nodemon server.js",
+    "dev": "npm run dev:preflight && concurrently \"npm run start:pinchtab\" \"nodemon server.js\"",
+    "dev:nopin": "npm run dev:backend",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -25,15 +27,19 @@
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "cheerio": "^1.2.0",
+    "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "crypto": "^1.0.1",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
+    "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^8.3.1",
     "express-validator": "^7.3.1",
+    "firebase-admin": "^13.7.0",
     "gridfs-stream": "^1.1.1",
     "helmet": "^8.1.0",
+    "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.2.32",
     "mammoth": "^1.12.0",
@@ -46,7 +52,9 @@
     "pdf-parse": "^2.4.5",
     "secure-exec": "^0.1.0",
     "socket.io": "^4.8.3",
-    "xlsx": "^0.18.5"
+    "winston": "^3.19.0",
+    "xlsx": "^0.18.5",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

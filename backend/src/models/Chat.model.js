@@ -28,7 +28,7 @@ const chatSchema = new mongoose.Schema({
     model: String,
     queryMode: {
         type: String,
-        enum: ["search", "think", "create"],
+        enum: ["search", "think", "create", "generate-image", "generate-video", "build-website"],
         default: "think"
     }
 }, {

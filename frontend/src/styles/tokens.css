@@ -23,6 +23,32 @@
   --ease-expo: cubic-bezier(0.16,1,0.3,1);
   --ease-back: cubic-bezier(0.34,1.56,0.64,1);
   --ease-silk: cubic-bezier(0.45,0,0.55,1);
+
+  /* ── Semantic colours (theme-agnostic) ──────────────────── */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger:  #ef4444;
+  --color-info:    #3b82f6;
+
+  /* ── Border-radius scale ────────────────────────────────── */
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* ── Z-index scale ──────────────────────────────────────── */
+  --z-base:     0;
+  --z-raised:   10;
+  --z-dropdown: 300;
+  --z-sidebar:  500;
+  --z-sticky:   600;
+  --z-nav:      700;
+  --z-modal:    800;
+  --z-overlay:  850;
+  --z-toast:    900;
+  --z-cursor:   9999;
 }
 
 /* ── DARK THEME (default) ────────────────────────────────── */
@@ -35,6 +61,11 @@
   --clr-border:  rgba(201,168,76,0.12);
   --clr-accent:  #c9a84c;
   --clr-accent2: #e8b050;
+
+  /* Toaster colours for this theme */
+  --toast-bg:     #161310;
+  --toast-text:   #f0ebe0;
+  --toast-border: rgba(201,168,76,0.18);
 }
 
 /* ── LIGHT THEME ─────────────────────────────────────────── */
@@ -47,6 +78,10 @@
   --clr-border:  rgba(0,0,0,0.09);
   --clr-accent:  #9a7020;
   --clr-accent2: #b88830;
+
+  --toast-bg:     #ffffff;
+  --toast-text:   #1a1208;
+  --toast-border: rgba(0,0,0,0.10);
 }
 
 /* ── SAND THEME ──────────────────────────────────────────── */
@@ -59,6 +94,10 @@
   --clr-border:  rgba(0,0,0,0.11);
   --clr-accent:  #a84e10;
   --clr-accent2: #c86020;
+
+  --toast-bg:     #eddfc4;
+  --toast-text:   #221606;
+  --toast-border: rgba(0,0,0,0.12);
 }
 
 /* ── OCEAN THEME ─────────────────────────────────────────── */
@@ -71,4 +110,8 @@
   --clr-border:  rgba(60,160,220,0.10);
   --clr-accent:  #30b8d0;
   --clr-accent2: #18a0b8;
+
+  --toast-bg:     #091e30;
+  --toast-text:   #c8e8f4;
+  --toast-border: rgba(60,160,220,0.15);
 }

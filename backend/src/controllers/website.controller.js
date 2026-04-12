@@ -3,24 +3,29 @@ const geminiService = require("../services/gemini.service");
 const asyncHandler = require("../middleware/asyncHandler");
 const AppError = require("../utils/AppError");
 
+const VALID_TYPES = ["landing-page", "portfolio", "saas", "blog", "e-commerce", "dashboard", "other"];
+
 exports.generateWebsite = asyncHandler(async (req, res, next) => {
     const { prompt, type } = req.body;
 
     if (!prompt) return next(new AppError("Prompt is required", 400));
 
-    const result = await geminiService.generateWebsite(prompt, type);
+    // Normalise type — fall back to "other" for unrecognised values
+    const siteType = VALID_TYPES.includes(type) ? type : "other";
+
+    const result = await geminiService.generateWebsite(prompt, siteType);
 
     const website = await GeneratedWebsite.create({
         user: req.user.id,
         prompt,
         title: result.title,
         fullHtml: result.fullHtml,
-        type: result.type
+        type: result.type,
     });
 
     res.status(201).json({
         status: "success",
-        data: { website }
+        data: { website },
     });
 });
 

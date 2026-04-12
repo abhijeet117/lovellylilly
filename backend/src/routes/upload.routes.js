@@ -1,5 +1,7 @@
 const express = require("express");
 const uploadController = require("../controllers/upload.controller");
+const uploadValidator = require("../validators/upload.validator");
+const validate = require("../middleware/validate");
 const upload = require("../middleware/multer");
 const { protect } = require("../middleware/auth");
 
@@ -9,7 +11,7 @@ router.use(protect);
 
 router.post("/upload", upload.single("document"), uploadController.uploadDocument);
 router.get("/", uploadController.getMyDocs);
-router.delete("/:documentId", uploadController.deleteDoc);
-router.post("/:documentId/chat", uploadController.chatWithDoc);
+router.delete("/:documentId", uploadValidator.documentIdOnly, validate, uploadController.deleteDoc);
+router.post("/:documentId/chat", uploadValidator.chatWithDoc, validate, uploadController.chatWithDoc);
 
 module.exports = router;
